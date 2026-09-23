@@ -1,7 +1,9 @@
+import './Perfil.css'
+
 function App() {
   return ( 
     <div>
-      <h1>Pi-amarelo</h1>
+        <Perfil/>
 
 
     </div>

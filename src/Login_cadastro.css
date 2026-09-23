@@ -1,0 +1,149 @@
+:root {
+    --bg-main: #626c82;
+    --bg-dark: #37415c;
+    --bg-light: #8e9bb3;
+    --text-white: #ffffff;
+    --accent-yellow: #f8cb47;
+    --accent-green: #2ecc71;
+    --accent-red: #e74c3c;
+    --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+
+    margin: 0;
+    padding: 0;
+
+    background-color: var(--bg-main);
+    color: var(--text-white);
+    font-family: var(--font-main);
+    display: center;
+
+}
+
+
+.navbar {
+    background-color: var(--bg-dark);
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    margin-bottom: 100px;
+    justify-content: space-between;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.nav-left,
+.nav-center,
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.nav-link:hover {
+    color: var(--accent-yellow);
+}
+
+.user-icon {
+    width: 30px;
+    height: 30px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--bg-dark);
+}
+
+
+.card {
+
+    text-align: center;
+    justify-self: center;
+    width: 580px;
+   
+}
+
+.card h1 {
+
+    font-size: 35px;
+    font-weight: bold;
+    padding-top: 5px;
+   
+   
+    
+}
+
+.card form div {
+
+    background-color: #333333;
+    /* Fundo cinza escuro */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+
+    padding-left: 60px;
+    padding-right: 60px;
+    padding-bottom: 26px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+
+}
+
+
+.card span {
+    margin-top: -8px;
+    justify-content: center;
+    display: flex;
+    gap: 15px;
+}
+
+.card input {
+    margin-top: -8px;
+    padding: 16px;
+    border: none;
+    text-align: center;    /* placeholder centralizado */
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    color: #000000;
+    margin-bottom: 12px;
+}
+
+
+
+.btn {
+    margin-top: 40px;
+    padding: 15px 30px;
+    font-size: 15px;
+    font-weight: bold;
+    text-align: center;
+    align-items: center;
+    background-color: #333333;
+    border: 2px solid #555555;
+    color: #ffffff;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+
+
+
+}
+
+.btn button{
+    font-size: 30px;
+}
+/*cor de animação */
+.btn:hover {
+    background-color: #444444;
+    border-color: #868686;
+}
