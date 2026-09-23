@@ -1,9 +1,14 @@
-import './Perfil.css'
+import Perfil from "./Perfil"
+import Universos from "./Universos";
+
 
 function App() {
   return ( 
     <div>
-        <Perfil/>
+      
+        {/* <Perfil/> */}
+        <Universos/>
+
 
 
     </div>
