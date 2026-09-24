@@ -5,6 +5,7 @@
     display: flex;
     align-items: center;
     padding: 0 20px;
+    margin-bottom: 30px;
     justify-content: space-between;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
@@ -56,16 +57,33 @@
 
 .rodape{
     background-color: var(--bg-dark);
+    bottom: 0%;
     position: absolute;
-    bottom: 0; 
+  
+  
     box-shadow: 0px 0px 5px #222222;
     width: 100%;
     text-align: center;
-    align-items: center;
-    font-size: 18px;
+    padding: 5px;
   
+   
+    font-size: 19px;
 
 
     
 
+}
+
+.rodape-cor {
+    color: white;
+    text-decoration: none;
+    font-size: 17px;
+  
+    padding: 10px;
+    text-align: center;
+   
+}
+
+.rodape-cor:hover {
+    color: var(--accent-yellow);
 }

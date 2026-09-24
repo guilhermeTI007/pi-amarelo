@@ -3,29 +3,11 @@ import "./Perfil.css";
 function Perfil() {
   return ( 
     <div>
-      <nav className="navbar">
-        <div className="nav-left">
-          <button className="menu-btn">☰</button>
-          <input type="text" className="search-bar" placeholder="🔍 Buscar..."/>
-        </div>
-        <div className="nav-center">
-          <a href="#" className="nav-link">INICIAL</a>
-          <span className="nav-link">•</span>
-          <a href="#" className="nav-link">PERSONAGENS</a>
-          <span className="nav-link">•</span>
-          <a href="#" className="nav-link">COMUNIDADE</a>
-        </div>
-        <div className="nav-right">
-          <a href="#" className="nav-link">CADASTRAR</a>
-          <span className="nav-link">•</span>
-          <a href="#" className="nav-link">ENTRAR</a>
-          <div className="user-icon">👤</div>
-        </div>
-      </nav>
+    
 
       <div className="container">
         {/* CORRIGIDO: Style inline convertido para objeto */}
-        <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+        <div style={{ marginBottom: '14px', textAlign: 'center' }}>
           {/* CORRIGIDO: Style inline convertido para objeto */}
           <label style={{ cursor: 'pointer', fontSize: '12px', color: '#ccc' }}>
             <input type="checkbox" id="premium-toggle"/> (Demo: Marcar para simular plano assinado)

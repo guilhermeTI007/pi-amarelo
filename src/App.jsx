@@ -1,6 +1,8 @@
-// import Perfil from "./Perfil"
-// import Universos from "./Universos";
-import Rodape from "./Rodape";
+import Cadastro from "./paginas/Cadastro";
+import Login from "./paginas/Login";
+import Perfil from "./paginas/Perfil"
+import Universos from "./paginas/Universos";
+import {BrowserRouter,  Route, Routes} from "react-router-dom"
 
 
 
@@ -9,9 +11,16 @@ function App() {
     <div>
       
         {/* <Perfil/> */}
+        {/* <Login/> */}
+        {/* <Cadastro/> */}
         {/* <Universos/> */}
-        <Rodape/>
-
+      
+ <BrowserRouter>
+        <Routes>
+        <Route path="/" element={<Perfil/>}/>
+       
+        </Routes>
+      </BrowserRouter>
 
 
     </div>

@@ -3,44 +3,6 @@ import "./Universos.css";
 function Universos() {
   return ( 
     <div>
-      {/* CORRIGIDO: class -> className */}
-      <header className="navbar">
-
-        {/* CORRIGIDO: class -> className */}
-        <button className="hamburger" id="btn-hamburger" aria-label="Menu">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-
-        <div className="search-bar">
-          <span className="search-icon">🔍</span>
-          <input type="text" className="search-input" placeholder="" id="input-busca" />
-        </div>
-
-        <nav className="nav-center">
-          <a href="#" className="nav-link">CADASTRAR</a>
-          <span className="nav-dot">•</span>
-          <a href="#" className="nav-link">PERSONAGENS</a>
-          <span className="nav-dot">•</span>
-          <a href="#" className="nav-link">COMUNIDADE</a>
-          <span className="nav-dot">•</span>
-        </nav>
-
-        <div className="auth-area">
-          <a href="#" className="auth-link" id="link-cadastrar">CADASTRAR</a>
-          <span className="nav-dot">•</span>
-          <a href="#" className="auth-link" id="link-entrar">ENTRAR</a>
-
-          <img src="../imagens/icone-usuario.png" alt="Perfil do usuário" className="avatar-icon" />
-          <div className="avatar-icon" aria-label="Perfil do usuário">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-              <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-            </svg>
-          </div>
-        </div>
-
-      </header>
      
       <div className="main-wrapper">
 

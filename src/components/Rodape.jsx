@@ -4,20 +4,22 @@ function Rodape() {
   return ( 
     <div  >
 
-     <div className="rodape"> 
-      
-             <h1>Todos os direitos reservados</h1>
-           
-         <div className="nav-link" style={{paddingTop:'12px'}}>
+     
+      <div className="rodape">
+          <h1>Todos os direitos reservados</h1>
+           <div className="rodape-cor" >
           
         <p>Email: contato@universos.com</p>
         <p>Telefone: (11) 1234-5678</p>
       
          </div>
+        </div>
+        
+       
    
-      </div> 
+    
 
-      
+        
      
        
       

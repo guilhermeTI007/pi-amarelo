@@ -3,26 +3,6 @@ import "./Perfil.css"
 function Planos() {
   return ( 
     <div>
-    <nav class="navbar">
-        <div class="nav-left">
-            <button class="menu-btn">☰</button>
-            <input type="text" class="search-bar" placeholder="🔍 Buscar..."/>
-        </div>
-        <div class="nav-center">
-            <span class="nav-link">•</span>
-            <a href="#" class="nav-link">CADASTRAR</a>
-            <span class="nav-link">•</span>
-            <a href="#" class="nav-link">PERSONAGENS</a>
-            <span class="nav-link">•</span>
-            <a href="#" class="nav-link">COMUNIDADE</a>
-        </div>
-        <div class="nav-right">
-            <a href="#" class="nav-link">CADASTRAR</a>
-            <span class="nav-link">•</span>
-            <a href="#" class="nav-link">ENTRAR</a>
-            <div class="user-icon">👤</div>
-        </div>
-    </nav>
 
     <a href="PERFIL.html" class="back-btn">← Voltar</a>
 

@@ -1,73 +1,14 @@
-:root {
-    --bg-main: #626c82;
-    --bg-dark: #37415c;
-    --bg-light: #8e9bb3;
-    --text-white: #ffffff;
-    --accent-yellow: #f8cb47;
-    --accent-green: #2ecc71;
-    --accent-red: #e74c3c;
-    --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
 
-body {
-
-    margin: 0;
-    padding: 0;
-
-    background-color: var(--bg-main);
-    color: var(--text-white);
-    font-family: var(--font-main);
-    display: center;
-
-}
-
-
-.navbar {
-    background-color: var(--bg-dark);
-    height: 60px;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    margin-bottom: 100px;
-    justify-content: space-between;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.nav-left,
-.nav-center,
-.nav-right {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.nav-link {
-    color: white;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.nav-link:hover {
-    color: var(--accent-yellow);
-}
-
-.user-icon {
-    width: 30px;
-    height: 30px;
-    background-color: white;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--bg-dark);
-}
 
 
 .card {
 
+    margin-top: 15px;
+    background-color: #d21a1a;
     text-align: center;
     justify-self: center;
+ 
+    margin: 50px;
     width: 580px;
    
 }
@@ -100,7 +41,7 @@ body {
 
 
 .card span {
-    margin-top: -8px;
+    margin-top: 10px;
     justify-content: center;
     display: flex;
     gap: 15px;
@@ -122,7 +63,7 @@ body {
 
 
 .btn {
-    margin-top: 40px;
+    margin-top: 28px;
     padding: 15px 30px;
     font-size: 15px;
     font-weight: bold;
