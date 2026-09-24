@@ -9,6 +9,14 @@
     --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.a {
+    display: flex;
+
+    flex-direction: column;
+    justify-content: space-between;
+
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -19,6 +27,6 @@ body {
     background-color: var(--bg-main);
     color: var(--text-white);
     font-family: var(--font-main);
-    min-height: 100vh;
+  
     justify-content: center;
 }
