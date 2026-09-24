@@ -1,0 +1,255 @@
+:root {
+    --bg-panel: #37415c;
+    --bg-panel-2: #414c6c;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 70px; /* espaço para o rodapé fixo */
+}
+
+.conteudo {
+    flex: 1;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--bg-dark);
+    padding: 40px 24px;
+    margin: 20px;
+    border-radius: 12px;
+}
+
+.hero-texto h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    line-height: 1.15;
+    font-weight: bold;
+}
+
+.hero-briga {
+    display: block;
+    font-style: italic;
+}
+
+.hero-sub {
+    margin: 8px 0 24px;
+    font-size: 12px;
+    color: var(--bg-light);
+}
+
+.stats {
+    display: flex;
+    gap: 32px;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: var(--bg-light);
+}
+
+.stat-valor {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.hero-cta {
+    max-width: 280px;
+}
+
+.hero-cta p {
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.botao-principal {
+    background-color: var(--accent-yellow);
+    color: var(--bg-dark);
+    border: none;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 12px 26px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.botao-principal:hover {
+    filter: brightness(1.05);
+}
+
+/* ---------- Painéis ---------- */
+.painel {
+    background-color: var(--bg-panel);
+    margin: 20px;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.painel h2 {
+    margin: 0 0 16px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.estrela {
+    color: var(--accent-yellow);
+}
+
+/* Spotlight batalha */
+.spotlight-batalha {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background-color: var(--bg-panel-2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    text-decoration: none;
+    color: var(--text-white);
+}
+
+.spotlight-batalha:hover {
+    filter: brightness(1.08);
+}
+
+.confronto-icones {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.icone {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    font-weight: bold;
+    font-size: 12px;
+    color: var(--bg-dark);
+}
+
+.icone-a {
+    background-color: var(--bg-light);
+}
+
+.icone-b {
+    background-color: var(--accent-red);
+}
+
+.vs-mini {
+    font-weight: 800;
+    color: var(--accent-yellow);
+    font-size: 12px;
+}
+
+.confronto-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+}
+
+.confronto-titulo {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.confronto-votos {
+    font-size: 12px;
+    color: var(--bg-light);
+}
+
+.seta {
+    font-size: 22px;
+    opacity: 0.7;
+}
+
+/* Vamos batalhar */
+.duelo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+}
+
+.duelo input {
+    flex: 1;
+    min-width: 140px;
+    background-color: var(--bg-panel-2);
+    border: none;
+    border-radius: 6px;
+    padding: 14px 16px;
+    color: var(--text-white);
+    font-size: 14px;
+    font-family: var(--font-main);
+}
+
+.duelo input::placeholder {
+    color: var(--bg-light);
+}
+
+.vs-grande {
+    font-weight: 800;
+    font-style: italic;
+    font-size: 24px;
+    color: var(--accent-yellow);
+}
+
+.botao-duelo {
+    background-color: var(--accent-green);
+    color: var(--text-white);
+    border: none;
+    border-radius: 6px;
+    padding: 12px 18px;
+    font-weight: bold;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.botao-duelo:hover {
+    filter: brightness(1.08);
+}
+
+/* Spotlight teoria */
+.teoria {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.teoria-autor {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background-color: var(--bg-panel-2);
+}
+
+.teoria-texto {
+    font-size: 14px;
+}
+
+@media (max-width: 640px) {
+    .nav-center {
+        display: none;
+    }
+    .hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

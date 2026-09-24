@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tela Inicial</title>
+  <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="MenuSuperior_Rodape.css" />
+  <link rel="stylesheet" href="tela-inicial.css" />
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-left">
+      <button class="menu-btn" aria-label="Abrir menu">☰</button>
+      <input class="search-bar" type="text" placeholder="Buscar" aria-label="Buscar" />
+    </div>
+
+    <nav class="nav-center">
+      <a class="nav-link" href="tela-inicial.html">Inicial</a>
+      <a class="nav-link" href="#">Personagens</a>
+      <a class="nav-link" href="#">Comunidade</a>
+    </nav>
+
+    <div class="nav-right">
+      <a class="nav-link" href="#">Cadastrar</a>
+      <a class="nav-link" href="#">Entrar</a>
+      <div class="user-icon" aria-hidden="true">🧑</div>
+    </div>
+  </header>
+
+  <main class="conteudo">
+
+    <section class="hero">
+      <div class="hero-texto">
+        <h1>Tudo que eu pensava era <span class="hero-briga">"BRIGA!"</span></h1>
+        <p class="hero-sub">Membro da comunidade ELE VENCERIA</p>
+
+        <div class="stats">
+          <div class="stat">
+            <span class="stat-valor">2,059,073</span>
+            <span class="stat-label">Personagens</span>
+          </div>
+          <div class="stat">
+            <span class="stat-valor">129,081</span>
+            <span class="stat-label">Celebridades</span>
+          </div>
+          <div class="stat">
+            <span class="stat-valor">6,166,752</span>
+            <span class="stat-label">Usuários</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-cta">
+        <p>Vote em confrontos lendários, defenda seu time e mostre para a comunidade quem realmente manda</p>
+        <button class="botao-principal" type="button">FAÇA PARTE</button>
+      </div>
+    </section>
+
+    <section class="painel">
+      <h2><span class="estrela">★</span> Spotlight diário de batalha</h2>
+
+      <a class="spotlight-batalha" href="batalha.html?a=Batman&anoA=2001&b=Homem%20de%20ferro&anoB=2009">
+        <span class="confronto-icones">
+          <span class="icone icone-a">BT</span>
+          <span class="vs-mini">VS</span>
+          <span class="icone icone-b">HF</span>
+        </span>
+
+        <span class="confronto-info">
+          <span class="confronto-titulo">Batman VS Homem de Ferro</span>
+          <span class="confronto-votos">230 votos nas últimas 5h 🔥</span>
+        </span>
+
+        <span class="seta" aria-hidden="true">›</span>
+      </a>
+    </section>
+
+    <section class="painel">
+      <h2>Vamos batalhar!</h2>
+
+      <form class="duelo" id="form-duelo">
+        <input type="text" name="a" placeholder="Digite aqui" aria-label="Primeiro concorrente" required />
+        <span class="vs-grande">VS</span>
+        <input type="text" name="b" placeholder="Digite aqui" aria-label="Segundo concorrente" required />
+        <button type="submit" class="botao-duelo">Criar batalha</button>
+      </form>
+    </section>
+
+    <section class="painel">
+      <h2><span class="estrela">★</span> Spotlight melhor teoria</h2>
+
+      <div class="teoria">
+        <span class="confronto-icones">
+          <span class="icone icone-a">BT</span>
+          <span class="vs-mini">VS</span>
+          <span class="icone icone-b">HF</span>
+        </span>
+        <span class="teoria-autor" aria-hidden="true">👤</span>
+        <span class="teoria-texto">Tomate é uma fruta</span>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="rodape">
+    <a class="rodape-cor" href="#sobre">SOBRE NÓS</a>
+  </footer>
+
+  <script>
+    document.getElementById('form-duelo').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var a = e.target.a.value.trim();
+      var b = e.target.b.value.trim();
+      if (!a || !b) return;
+      var params = new URLSearchParams({ a: a, b: b, anoA: new Date().getFullYear(), anoB: new Date().getFullYear() });
+      window.location.href = 'batalha.html?' + params.toString();
+    });
+  </script>
+
+</body>
+</html>
