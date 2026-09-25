@@ -13,7 +13,7 @@ function MenuSuperior() {
             <a href="#" className="nav-link">INICIAL</a>
             <span className="nav-link">•</span>
             <a href="#" className="nav-link">PERSONAGENS</a>
-            <span class="nav-link">•</span>
+            <span className="nav-link">•</span>
             <a href="#" className="nav-link">COMUNIDADE</a>
         </div>
         <div className="nav-right">
