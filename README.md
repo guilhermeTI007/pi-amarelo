@@ -1,16 +1,19 @@
-# React + Vite
+# Projeto amarelo (igual o sítio)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Taferas
+- Alex - **Combate**
+    - Uma tela que mostra os dados da tabela postagem
+    - **Dupla com Guilherme:** Mostrar os comentários e criar novo comentário
+- Guilherme - **Personagens**
+    - Uma tela para buscar todos os personagens do banco (limitar a consulta a 20 personagens)
+    - Uma tela para cadastrar uma nova luta
+        - Digitar o nome do personagem 1 e do personagem 2
+        - Verificar se o personagem 1 existe no banco
+            - Se não existir, abrir uma modal de cadastro
+        - Idem para personagem 2
+        - Cria a luta se não existir
+- Gustavo - **Login e cadastro**
+    - Pesquisar como loga no Supabase
+    - Guardar dados da sessão do usuário (localhost)
+    - Cadastrar novo usuário
+    - **Dupla com Alex:** Mostrar perfil usuário
