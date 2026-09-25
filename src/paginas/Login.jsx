@@ -18,7 +18,7 @@ function Login() {
 
             </div>
 
-            <span class="input-row">
+            <span>
 
                 <button class="btn">Continuar</button>
                 <button class="btn">Criar no usuário</button>
