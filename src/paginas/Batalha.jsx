@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import './MenuSuperior_Rodape.css';
+
 import './batalha.css';
 
 export default function Batalha() {
