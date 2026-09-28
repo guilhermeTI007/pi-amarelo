@@ -12,6 +12,7 @@ function Login_Cadastro() {
 
 
     const [nome, alteraNome] = useState("")
+    // const [nascimento, alteraData] = useState("")
 
     const [email, alteraEmail] = useState("")
     const [senha, alteraSenha] = useState("")
@@ -19,12 +20,12 @@ function Login_Cadastro() {
     const [verificaSenha, ConfereSenha] = useState("")
   
 
-    captarUser()
+  
     async function inserirUser() {
         const obj = {
             nome: nome,
             email: email,
-            senha: parseInt(senha)
+            senha: senha
         }
 
 
@@ -34,12 +35,14 @@ function Login_Cadastro() {
         // 2. Se a função captarUser retornar que existe, o return impede de chegar no insert abaixo
 
 
-        if (exibeCadastro == true && exibeUser == false) {
+        if (exibeCadastro == true ) {
 
             
 
             if (await captarUser()) {
-                
+            
+              
+                return 
             }
             if (senha != verificaSenha) {
 
@@ -55,8 +58,7 @@ function Login_Cadastro() {
 
                 captarUser(data)
                 alteraExibeCadastro(false)
-
-                localStorage.setItem("user", data )
+             
 
 
 
@@ -87,9 +89,6 @@ function Login_Cadastro() {
     async function captarUser(cadastro) {
 
 
-         const save =localStorage.getItem("user");
-
-         
          
        
         if (exibeCadastro == true) {
@@ -97,7 +96,7 @@ function Login_Cadastro() {
           
             if (cadastro) {
 
-                alteraUsuario(cadastro)
+                alteraUsuario(data)
                 alert("Usuario cadastrado e logado")
                 return
             }
@@ -136,7 +135,7 @@ function Login_Cadastro() {
 
                 if (cadastro) {
 
-                    alteraUsuario(data)
+                    alteraUsuario(cadastro)
                     alteraExibeUser(true)
                     alteraExibeCadastro(true)
                     alert("Usuario logado")
@@ -251,7 +250,7 @@ function Login_Cadastro() {
 
                             <h1>Entrar na conta </h1>
 
-                            <input name="username" onChange={e => e.target.value.includes("@") ? alteraEmail(e.target.value) : alteraNome(e.target.value)} placeholder="Nome de usuário ou E-mail" required />
+                            <input onChange={e => e.target.value.includes("@") ? alteraEmail(e.target.value) : alteraNome(e.target.value)} placeholder="Nome de usuário ou E-mail" required />
                             <input type="password" onChange={e => alteraSenha(e.target.value)} placeholder="Confirmar senha" required />
 
                         </div>
