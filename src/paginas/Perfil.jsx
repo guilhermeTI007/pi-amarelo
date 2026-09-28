@@ -3,25 +3,6 @@ import "./Perfil.css"
 function Perfil() {
   return ( 
     <div>
-       <nav className="navbar">
-        <div className="nav-left">
-            <button className="menu-btn">☰</button>
-            <input type="text" className="search-bar" placeholder="🔍 Buscar..."/>
-        </div>
-        <div className="nav-center">
-            <a href="#" className="nav-link">INICIAL</a>
-            <span className="nav-link">•</span>
-            <a href="#" className="nav-link">PERSONAGENS</a>
-            <span className="nav-link">•</span>
-            <a href="#" className="nav-link">COMUNIDADE</a>
-        </div>
-        <div className="nav-right">
-            <a href="#" className="nav-link">CADASTRAR</a>
-            <span className="nav-link">•</span>
-            <a href="#" className="nav-link">ENTRAR</a>
-            <div className="user-icon">👤</div>
-        </div>
-    </nav>
 
     <div className="container">
         
@@ -37,10 +18,10 @@ function Perfil() {
                 <div className="banner-area"></div>
                 <button className="settings-btn">⚙️</button>
                 
-                <a href="PLANOS.html" className="btn-planos">Planos</a>
+                <a href="/Planos" className="btn-planos">Planos</a>
                 
                 <div className="profile-pic-container">
-                    <img src="https://placehold.co/120x120/FFF/000?text=User" alt="Foto de Perfil" class="profile-pic"/>
+                    <img src="https://placehold.co/120x120/FFF/000?text=User" alt="Foto de Perfil" className="profile-pic"/>
                     <div className="premium-stars"></div>
                 </div>
 

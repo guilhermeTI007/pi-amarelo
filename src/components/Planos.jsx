@@ -1,10 +1,10 @@
-import "./Perfil.css"
+import "../paginas/Perfil.css"
 
 function Planos() {
   return ( 
     <div>
 
-    <a href="PERFIL.html" class="back-btn">← Voltar</a>
+    <a href="/Perfil" class="back-btn">← Voltar</a>
 
     <h1 class="planos-header">NOSSOS PLANOS</h1>
 
@@ -30,7 +30,7 @@ function Planos() {
                     <li>Acesso completo</li>
                     <li>Sem anúncios</li>
                 </ul>
-                <a href="PERFIL.html" class="plan-btn">OBTER</a>
+                <a href="/Perfil" class="plan-btn">OBTER</a>
             </div>
         </div>
 

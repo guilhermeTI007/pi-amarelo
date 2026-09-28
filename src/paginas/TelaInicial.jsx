@@ -1,5 +1,4 @@
 import React from 'react';
-import '../components/MenuSuperior_Rodape.css';
 import './tela-inicial.css';
 
 export default function TelaInicial() {
@@ -15,24 +14,7 @@ export default function TelaInicial() {
 
   return (
     <>
-      <header className="navbar">
-        <div className="nav-left">
-          <button className="menu-btn" aria-label="Abrir menu">☰</button>
-          <input className="search-bar" type="text" placeholder="Buscar" aria-label="Buscar" />
-        </div>
-
-        <nav className="nav-center">
-          <a className="nav-link" href="tela-inicial.html">Inicial</a>
-          <a className="nav-link" href="#">Personagens</a>
-          <a className="nav-link" href="#">Comunidade</a>
-        </nav>
-
-        <div className="nav-right">
-          <a className="nav-link" href="#">Cadastrar</a>
-          <a className="nav-link" href="#">Entrar</a>
-          <div className="user-icon" aria-hidden="true">🧑</div>
-        </div>
-      </header>
+    
 
       <main className="conteudo">
         <section className="hero">
