@@ -114,40 +114,20 @@ function Login_Cadastro() {
 
             // senha digitada tem que ser igual senha de conferencia digitada
 
-            if(email != ""){
+              const dado = nome != "" ? "nome,senha" : "email,senha";
+            const coluna = nome != "" ? "nome" : "email";
+            const valor = nome !== "" ? nome : email;
 
-                 const { data } = await supabase.from("usuarios").select("email,senha").eq("email", email).eq("senha", senha)
-
-
-                       if (data && data.length > 0) {
-
-
-
-                if (data) {
-
-                    alteraUsuario(data)
-                    alteraExibeUser(true)
-                    alteraExibeCadastro(true)
-                    alert("Usuario logado")
-                    return
-                }
+            const { data } = await supabase
+                .from("usuarios")
+                .select(dado)
+                .eq(coluna, valor)
+                .eq("senha", senha);
 
 
-                return true
-            }
 
 
-            alert("Este usuário não existe !")
 
-            // se nome dentro de data for diferente retorna false para função captarUser(false)
-
-            return false
-            }
-         
-
-                 const { data } = await supabase.from("usuarios").select("nome,senha").eq("nome", nome).eq("senha", senha)
-
-          
 
             // cadastro é o parametro para identificar se recebe parâmetro data no inserirUser, se captarUser(data) recebe parâmetro, ele altera usuario 
 
@@ -199,16 +179,17 @@ function Login_Cadastro() {
 
                         {
                             exibeUser == true ?
+
                                 usuario.map(i =>
+                                    <div>
+                                        <tr>
 
-                                    <tr>
+                                            <td> {i.nome}</td>
+                                            <td> {i.email}</td>
+                                            <td> {i.senha}</td>
 
-                                        <td> {i.nome}</td> 
-                                        <td> {i.email}</td>
-                                        <td> {i.senha}</td>
-                                      
 
-                                    </tr>
+                                        </tr></div>
 
                                 ) : <></>
                         }
@@ -226,7 +207,7 @@ function Login_Cadastro() {
                                 <input type="date" />
                             </span>
 
-                            <input type="email" onChange={e => alteraEmail(e.target.value)} placeholder="E-mail" />
+                            <input type="email"    onChange={e => alteraEmail(e.target.value)} placeholder="E-mail" />
                             <input type="password" onChange={e => alteraSenha(e.target.value)} placeholder="Senha" />
                             <input type="password" onChange={e => ConfereSenha(e.target.value)} placeholder="Confirmar senha" />
 
@@ -273,7 +254,7 @@ function Login_Cadastro() {
 
                             <h1>Entrar na conta </h1>
 
-                            <input  onChange={ e=> e.target.value.includes("@")? alteraEmail(e.target.value):  alteraNome(e.target.value) } placeholder="Nome de usuário ou E-mail" required />
+                            <input   name="username" onChange={e => e.target.value.includes("@") ? alteraEmail(e.target.value) : alteraNome(e.target.value)} placeholder="Nome de usuário ou E-mail" required />
                             <input type="password" onChange={e => alteraSenha(e.target.value)} placeholder="Confirmar senha" required />
 
                         </div>
