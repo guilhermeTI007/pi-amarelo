@@ -6,9 +6,7 @@ import Personagens from './paginas/Personagens';
 import NovaBatalha from './paginas/NovaBatalha';
 import Batalhas from './paginas/Batalhas';
 import Perfil from './paginas/Perfil';
-import Login from './paginas/Login';
-import Cadastro from './paginas/Cadastro';
-import Universos from './paginas/Universos';
+import Login_Cadastro from './paginas/Login_Cadastro';
 
 function Layout({ children }) {
   return (
@@ -26,25 +24,27 @@ function App() {
         <Routes>
           {/* Página inicial */}
           <Route path="/" element={<TelaInicial />} />
+          <Route path="/TelaInicial" element={<TelaInicial />} />
 
-          {/* Guilherme: Personagens */}
+          {/* Personagens */}
           <Route path="/personagens" element={<Personagens />} />
 
-          {/* Guilherme: Cadastrar nova luta */}
+          {/* Cadastrar nova luta */}
           <Route path="/nova-batalha" element={<NovaBatalha />} />
 
-          {/* Alex: Batalhas com comentários do banco */}
+          {/* Batalhas com votação e comentários */}
           <Route path="/batalhas" element={<Batalhas />} />
+          <Route path="/batalha" element={<Batalhas />} />
 
-          {/* Gustavo: Login e Cadastro */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/cadastro" element={<Cadastro />} />
+          {/* Login e Cadastro */}
+          <Route path="/login" element={<Login_Cadastro />} />
+          <Route path="/cadastro" element={<Login_Cadastro />} />
 
-          {/* Gustavo + Alex: Perfil */}
+          {/* Perfil com histórico */}
           <Route path="/perfil" element={<Perfil />} />
 
-          {/* Universos */}
-          <Route path="/universos" element={<Universos />} />
+          {/* Rota padrão para páginas não encontradas */}
+          <Route path="*" element={<TelaInicial />} />
         </Routes>
       </Layout>
     </BrowserRouter>

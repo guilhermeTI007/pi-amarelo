@@ -7,27 +7,172 @@
 
 .batalhas-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
 .batalhas-titulo {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 900;
-  color: var(--text-white);
+  color: var(--text-white, #fff);
   margin-bottom: 8px;
 }
 
 .estrela-batalha {
-  color: var(--accent-yellow);
+  color: var(--accent-yellow, #f8cb47);
 }
 
 .batalhas-sub {
-  color: var(--bg-light);
+  color: var(--bg-light, #a0aec0);
   font-size: 14px;
 }
 
+/* ── Alerta Deslogado no Topo de Batalhas ─────────────────────────── */
+.aviso-deslogado-batalhas {
+  background: linear-gradient(135deg, rgba(248, 203, 71, 0.12), rgba(231, 76, 60, 0.12));
+  border: 1px solid rgba(248, 203, 71, 0.35);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.aviso-deslogado-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.aviso-icone-pulse {
+  font-size: 28px;
+}
+
+.aviso-deslogado-info strong {
+  display: block;
+  color: var(--accent-yellow, #f8cb47);
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.aviso-deslogado-info p {
+  color: #cbd5e0;
+  font-size: 13px;
+  margin: 0;
+}
+
+.aviso-deslogado-botoes {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-ir-login {
+  background: var(--accent-yellow, #f8cb47);
+  color: #111;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-ir-login:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-ir-cadastro {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s;
+}
+
+.btn-ir-cadastro:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Modal Bloqueio de Login ─────────────────────────────────────── */
+.modal-login-bloqueio-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-login-bloqueio-card {
+  background: #1a2233;
+  border: 1px solid rgba(248, 203, 71, 0.4);
+  border-radius: 18px;
+  padding: 36px 30px;
+  text-align: center;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  animation: popIn 0.3s ease;
+}
+
+.modal-login-icone {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.modal-login-bloqueio-card h3 {
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.modal-login-bloqueio-card p {
+  color: #cbd5e0;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.modal-login-acoes {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-fechar-alerta {
+  background: #273145;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-fechar-alerta:hover {
+  background: #33405a;
+}
+
+/* ── Batalhas Lista & Contagem ──────────────────────────────────── */
 .batalhas-count {
-  color: var(--bg-light);
+  color: var(--bg-light, #a0aec0);
   font-size: 13px;
   margin-bottom: 16px;
   text-align: right;
@@ -43,20 +188,36 @@
 .batalhas-vazio {
   text-align: center;
   padding: 60px 0;
-  color: var(--bg-light);
+  color: var(--bg-light, #a0aec0);
+}
+
+.btn-criar-primeira {
+  display: inline-block;
+  margin-top: 16px;
+  background: var(--accent-yellow, #f8cb47);
+  color: #111;
+  font-weight: 800;
+  padding: 12px 24px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: transform 0.2s;
+}
+
+.btn-criar-primeira:hover {
+  transform: translateY(-2px);
 }
 
 .batalhas-erro {
   text-align: center;
   padding: 40px;
-  background: var(--bg-dark);
+  background: var(--bg-dark, #161b26);
   border-radius: 12px;
-  color: var(--accent-red);
+  color: #e74c3c;
 }
 
 .btn-retry {
   margin-top: 14px;
-  background: var(--accent-red);
+  background: #e74c3c;
   color: white;
   border: none;
   border-radius: 8px;
@@ -67,12 +228,12 @@
 
 /* ---------- Cartão Batalha ---------- */
 .batalha-card {
-  background: var(--bg-dark);
+  background: var(--bg-dark, #161b26);
   border-radius: 18px;
   padding: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-  transition: box-shadow 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  transition: box-shadow 0.2s, transform 0.2s;
 }
 
 .batalha-card:hover {
@@ -87,33 +248,33 @@
 }
 
 .batalha-badge {
-  background: var(--accent-yellow);
-  color: var(--bg-dark);
+  background: var(--accent-yellow, #f8cb47);
+  color: #111;
   font-size: 11px;
-  font-weight: 800;
-  padding: 3px 10px;
+  font-weight: 900;
+  padding: 4px 12px;
   border-radius: 20px;
   text-transform: uppercase;
 }
 
 .batalha-data {
   font-size: 12px;
-  color: var(--bg-light);
+  color: var(--bg-light, #a0aec0);
   flex: 1;
 }
 
 .batalha-votos {
   font-size: 12px;
-  color: var(--bg-light);
-  font-weight: 600;
+  color: #cbd5e0;
+  font-weight: 700;
 }
 
-/* confronto */
+/* Confronto */
 .batalha-confronto {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .batalha-lado {
@@ -122,30 +283,37 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 16px 10px;
+  padding: 18px 12px;
   border-radius: 14px;
-  transition: background 0.2s;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  transition: all 0.2s;
 }
 
 .lado-vencedor {
-  background: rgba(248, 203, 71, 0.1);
-  border: 1px solid rgba(248, 203, 71, 0.3);
+  background: rgba(248, 203, 71, 0.08);
+  border-color: rgba(248, 203, 71, 0.35);
+}
+
+.lado-votado {
+  box-shadow: inset 0 0 0 1px #2ecc71;
 }
 
 .batalha-avatar {
-  width: 80px;
-  height: 80px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
   overflow: hidden;
-  background: var(--bg-main);
+  background: #111;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3px solid var(--bg-main);
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 .lado-vencedor .batalha-avatar {
-  border-color: var(--accent-yellow);
+  border-color: var(--accent-yellow, #f8cb47);
 }
 
 .batalha-img {
@@ -155,32 +323,89 @@
 }
 
 .batalha-avatar-icon {
-  font-size: 32px;
-  color: var(--accent-yellow);
+  font-size: 36px;
+  color: var(--accent-yellow, #f8cb47);
 }
 
 .batalha-nome {
-  font-weight: 700;
-  font-size: 14px;
+  font-weight: 800;
+  font-size: 15px;
   text-align: center;
-  color: var(--text-white);
+  color: #fff;
 }
 
 .batalha-pct {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 900;
-  color: var(--accent-yellow);
+  color: var(--accent-yellow, #f8cb47);
+}
+
+.batalha-contagem-votos {
+  font-size: 11px;
+  color: var(--bg-light, #a0aec0);
 }
 
 .badge-vencedor {
-  background: var(--accent-yellow);
-  color: var(--bg-dark);
+  background: var(--accent-yellow, #f8cb47);
+  color: #111;
   font-size: 10px;
-  font-weight: 800;
-  padding: 2px 8px;
+  font-weight: 900;
+  padding: 3px 8px;
   border-radius: 20px;
 }
 
+.badge-meu-voto {
+  background: #2ecc71;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+/* Botões de Voto */
+.btn-votar-personagem {
+  margin-top: 6px;
+  width: 100%;
+  max-width: 150px;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.btn-votar-p1 {
+  background: var(--accent-yellow, #f8cb47);
+  color: #111;
+}
+
+.btn-votar-p1:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+.btn-votar-p2 {
+  background: #e74c3c;
+  color: #fff;
+}
+
+.btn-votar-p2:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+.btn-votado {
+  background: #2ecc71 !important;
+  color: #fff !important;
+  cursor: default;
+  opacity: 0.9;
+}
+
+/* Separador VS */
 .batalha-vs-col {
   display: flex;
   flex-direction: column;
@@ -190,86 +415,85 @@
 }
 
 .batalha-vs {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 900;
   font-style: italic;
-  color: var(--accent-yellow);
+  color: var(--accent-yellow, #f8cb47);
 }
 
 .barra-progresso-batalha {
-  width: 8px;
-  height: 80px;
-  border-radius: 4px;
+  width: 10px;
+  height: 90px;
+  border-radius: 6px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: var(--bg-main);
+  background: #0f131c;
 }
 
 .barra-p1 {
-  background: var(--accent-yellow);
+  background: var(--accent-yellow, #f8cb47);
   transition: height 0.4s ease;
-  flex-shrink: 0;
+  width: 100%;
 }
 
 .barra-p2 {
-  background: var(--accent-red);
-  flex: 1;
+  background: #e74c3c;
+  transition: height 0.4s ease;
+  width: 100%;
 }
 
-/* toggle comentários */
+/* Toggle Comentários */
 .btn-toggle-comentarios {
-  background: var(--bg-main);
-  border: none;
-  color: var(--text-white);
+  background: #0f131c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
   font-size: 14px;
-  padding: 10px 20px;
-  border-radius: 8px;
+  font-weight: 700;
+  padding: 12px 20px;
+  border-radius: 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
   text-align: left;
   transition: background 0.2s;
 }
 
 .btn-toggle-comentarios:hover {
-  background: var(--bg-panel-hover, #2a3150);
+  background: #1b2333;
 }
 
-/* comentários */
+/* Comentários Container */
 .batalha-comentarios {
   margin-top: 16px;
-  background: var(--bg-main);
-  border-radius: 12px;
+  background: #0f131c;
+  border-radius: 14px;
   padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .comentarios-loading {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--bg-light);
+  color: var(--bg-light, #a0aec0);
   font-size: 13px;
 }
 
 .spinner-sm {
   width: 20px;
   height: 20px;
-  border: 3px solid var(--bg-dark);
-  border-top-color: var(--accent-yellow);
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--accent-yellow, #f8cb47);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   flex-shrink: 0;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 .comentarios-vazio {
-  color: var(--bg-light);
+  color: var(--bg-light, #a0aec0);
   font-size: 13px;
   text-align: center;
   padding: 16px 0;
@@ -280,20 +504,9 @@
   flex-direction: column;
   gap: 12px;
   margin-bottom: 20px;
-  max-height: 300px;
+  max-height: 320px;
   overflow-y: auto;
-  padding-right: 4px;
-}
-
-.lista-comentarios::-webkit-scrollbar {
-  width: 4px;
-}
-.lista-comentarios::-webkit-scrollbar-track {
-  background: transparent;
-}
-.lista-comentarios::-webkit-scrollbar-thumb {
-  background: var(--bg-light);
-  border-radius: 2px;
+  padding-right: 6px;
 }
 
 .comentario-item {
@@ -303,10 +516,10 @@
 }
 
 .comentario-avatar {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: var(--bg-dark);
+  background: #1a2233;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -322,27 +535,27 @@
 }
 
 .comentario-corpo {
-  background: var(--bg-dark);
+  background: #161b26;
   border-radius: 10px;
   padding: 10px 14px;
   flex: 1;
 }
 
 .comentario-autor {
-  font-weight: 700;
-  font-size: 12px;
-  color: var(--accent-yellow);
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--accent-yellow, #f8cb47);
   margin-right: 8px;
 }
 
 .comentario-data {
   font-size: 11px;
-  color: var(--bg-light);
+  color: var(--bg-light, #a0aec0);
 }
 
 .comentario-texto {
   font-size: 13px;
-  color: var(--text-white);
+  color: #e2e8f0;
   margin-top: 4px;
   line-height: 1.5;
 }
@@ -355,40 +568,36 @@
 }
 
 .comentario-input {
-  background: var(--bg-dark);
-  border: 2px solid transparent;
+  background: #161b26;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   padding: 12px 14px;
-  color: var(--text-white);
+  color: #fff;
   font-size: 14px;
   resize: none;
-  font-family: var(--font-main);
+  font-family: inherit;
   outline: none;
   transition: border-color 0.2s;
 }
 
 .comentario-input:focus {
-  border-color: var(--accent-yellow);
-}
-
-.comentario-input::placeholder {
-  color: var(--bg-light);
+  border-color: var(--accent-yellow, #f8cb47);
 }
 
 .comentario-erro {
-  color: var(--accent-red, #ff4757);
+  color: #ff4757;
   font-size: 13px;
   font-weight: 600;
-  margin-top: 8px;
-  background-color: rgba(255, 71, 87, 0.1);
+  background-color: rgba(255, 71, 87, 0.12);
   padding: 8px 12px;
   border-radius: 6px;
-  border-left: 3px solid var(--accent-red, #ff4757);
+  border-left: 3px solid #ff4757;
 }
+
 .btn-comentar {
   align-self: flex-end;
-  background: var(--accent-yellow);
-  color: var(--bg-dark);
+  background: var(--accent-yellow, #f8cb47);
+  color: #111;
   border: none;
   border-radius: 8px;
   padding: 10px 24px;
@@ -410,25 +619,42 @@
 .spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid var(--bg-dark);
-  border-top-color: var(--accent-yellow);
+  border: 4px solid #1a2233;
+  border-top-color: var(--accent-yellow, #f8cb47);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto 16px;
 }
 
-@media (max-width: 560px) {
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 600px) {
+  .aviso-deslogado-batalhas {
+    flex-direction: column;
+    text-align: center;
+  }
+  .aviso-deslogado-info {
+    flex-direction: column;
+  }
   .batalha-confronto {
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
   }
   .batalha-vs-col {
     flex-direction: row;
-    gap: 20px;
+    gap: 16px;
   }
   .barra-progresso-batalha {
     width: 100px;
-    height: 8px;
+    height: 10px;
     flex-direction: row;
+  }
+  .barra-p1 {
+    height: 100%;
+  }
+  .barra-p2 {
+    height: 100%;
   }
 }

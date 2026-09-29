@@ -7,39 +7,196 @@ const BUCKET_URL = 'https://rqjleobhyxxqfgwzruxa.supabase.co/storage/v1/object/p
 
 function getImagemUrl(p) {
   if (!p) return null;
-  if (p.startsWith('http')) return p;
+  if (p.startsWith('http') || p.startsWith('data:')) return p;
   return BUCKET_URL + p;
 }
 
+// ── Modal de Seleção de Personagem com Paginação (10 por página) ──
+function ModalEscolherPersonagem({ aberto, onClose, onSelect, ladoNome }) {
+  const [personagens, setPersonagens] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [busca, setBusca] = useState('');
+  const [pagina, setPagina] = useState(1);
+  const ITENS_POR_PAGINA = 10;
+
+  useEffect(() => {
+    if (aberto) {
+      carregarPersonagens();
+      setPagina(1);
+      setBusca('');
+    }
+  }, [aberto]);
+
+  async function carregarPersonagens() {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('personagens')
+        .select('*')
+        .order('nome', { ascending: true });
+      if (error) throw error;
+      setPersonagens(data || []);
+    } catch (err) {
+      console.error('Erro ao buscar personagens:', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!aberto) return null;
+
+  const filtrados = personagens.filter((p) =>
+    p.nome?.toLowerCase().includes(busca.toLowerCase().trim())
+  );
+
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / ITENS_POR_PAGINA));
+  const inicio = (pagina - 1) * ITENS_POR_PAGINA;
+  const personagensPagina = filtrados.slice(inicio, inicio + ITENS_POR_PAGINA);
+
+  return (
+    <div className="modal-personagens-overlay" onClick={onClose}>
+      <div className="modal-personagens-card" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-personagens-header">
+          <h3>Escolher {ladoNome} do Banco</h3>
+          <button className="modal-btn-fechar" onClick={onClose} type="button">✕</button>
+        </div>
+
+        <div className="modal-personagens-busca">
+          <input
+            type="text"
+            placeholder="Pesquisar personagem por nome..."
+            value={busca}
+            onChange={(e) => {
+              setBusca(e.target.value);
+              setPagina(1);
+            }}
+            autoFocus
+          />
+        </div>
+
+        <div className="modal-personagens-lista">
+          {loading ? (
+            <div className="modal-loading">
+              <div className="spinner-sm" />
+              <p>Carregando personagens...</p>
+            </div>
+          ) : personagensPagina.length === 0 ? (
+            <div className="modal-vazio">
+              <p>Nenhum personagem encontrado no banco.</p>
+              <small>Você pode fechar e cadastrar um novo lutador.</small>
+            </div>
+          ) : (
+            personagensPagina.map((p) => (
+              <div
+                key={p.id}
+                className="modal-personagem-item"
+                onClick={() => {
+                  onSelect(p);
+                  onClose();
+                }}
+              >
+                <div className="modal-personagem-avatar">
+                  {p.imagem ? (
+                    <img
+                      src={getImagemUrl(p.imagem)}
+                      alt={p.nome}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <span className="modal-avatar-fallback" style={{ display: p.imagem ? 'none' : 'flex' }}>
+                    VS
+                  </span>
+                </div>
+                <div className="modal-personagem-info">
+                  <strong className="modal-personagem-nome">{p.nome}</strong>
+                  <span className="modal-personagem-id">ID: #{p.id}</span>
+                </div>
+                <button type="button" className="btn-modal-escolher">
+                  Selecionar
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Paginação de 10 em 10 */}
+        <div className="modal-personagens-paginacao">
+          <button
+            type="button"
+            className="btn-pag"
+            disabled={pagina <= 1}
+            onClick={() => setPagina((p) => Math.max(1, p - 1))}
+          >
+            Anterior
+          </button>
+          <span className="info-pag">
+            Página <strong>{pagina}</strong> de <strong>{totalPaginas}</strong> ({filtrados.length} encontrados)
+          </span>
+          <button
+            type="button"
+            className="btn-pag"
+            disabled={pagina >= totalPaginas}
+            onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+          >
+            Próxima
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Bloco de seleção de personagem ────────────────────────────────
-function BlocoPersonagem({ label, cor, onPersonagemConfirmado }) {
+function BlocoPersonagem({
+  label,
+  cor,
+  onPersonagemConfirmado,
+  personagemSelecionado,
+  abrirModal,
+}) {
   const [nome, setNome] = useState('');
   const [arquivo, setArquivo] = useState(null);
+  const [usarPlaceholder, setUsarPlaceholder] = useState(false);
   const [preview, setPreview] = useState(null);
 
   // Estados: null=aguardando | 'verificando' | 'encontrado' | 'novo' | 'salvo'
   const [estado, setEstado] = useState(null);
-  const [personagemData, setPersonagemData] = useState(null);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
 
   const inputArquivoRef = useRef();
   const debounceRef = useRef();
 
+  // Se veio selecionado do modal exterior
+  useEffect(() => {
+    if (personagemSelecionado) {
+      setNome(personagemSelecionado.nome);
+      setPreview(getImagemUrl(personagemSelecionado.imagem));
+      setEstado('encontrado');
+      setErro('');
+    }
+  }, [personagemSelecionado]);
+
   // Debounce de verificação ao digitar nome
   useEffect(() => {
+    if (personagemSelecionado && personagemSelecionado.nome === nome) return;
+
     if (!nome.trim()) {
       setEstado(null);
-      setPersonagemData(null);
       setArquivo(null);
+      setUsarPlaceholder(false);
       setPreview(null);
       setErro('');
       onPersonagemConfirmado(null);
       return;
     }
+
     setEstado('verificando');
     clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => verificar(nome.trim()), 700);
+    debounceRef.current = setTimeout(() => verificar(nome.trim()), 600);
     return () => clearTimeout(debounceRef.current);
   }, [nome]);
 
@@ -52,12 +209,10 @@ function BlocoPersonagem({ label, cor, onPersonagemConfirmado }) {
 
     if (data && data.length > 0) {
       setEstado('encontrado');
-      setPersonagemData(data[0]);
       setPreview(getImagemUrl(data[0].imagem));
       onPersonagemConfirmado(data[0]);
     } else {
       setEstado('novo');
-      setPersonagemData(null);
       setPreview(null);
       onPersonagemConfirmado(null);
     }
@@ -67,46 +222,88 @@ function BlocoPersonagem({ label, cor, onPersonagemConfirmado }) {
     const f = e.target.files[0];
     if (!f) return;
     setArquivo(f);
+    setUsarPlaceholder(false);
     setPreview(URL.createObjectURL(f));
     setErro('');
   }
 
+  function handleAtivarPlaceholder() {
+    setArquivo(null);
+    setUsarPlaceholder(true);
+    setPreview(`https://placehold.co/400x400/161b26/f8cb47?text=${encodeURIComponent(nome.trim() || 'Personagem')}`);
+    setErro('');
+  }
+
   async function handleSalvarNovo() {
-    if (!arquivo) { setErro('Selecione uma imagem para o personagem.'); return; }
+    if (!nome.trim()) {
+      setErro('Informe o nome do personagem.');
+      return;
+    }
+
     setSalvando(true);
     setErro('');
+
     try {
-      const ext = arquivo.name.split('.').pop();
-      const nomeArquivo = `outros/${Date.now()}_${nome.replace(/\s+/g, '_')}.${ext}`;
+      let caminhoFinal = '';
 
-      const { error: uploadErr } = await supabase.storage
-        .from('personagens')
-        .upload(nomeArquivo, arquivo, { upsert: false });
-      if (uploadErr) throw uploadErr;
+      if (arquivo) {
+        // Envia a foto fisicamente para o Supabase Storage no bucket 'personagens' dentro da pasta 'outros/'
+        const ext = arquivo.name.split('.').pop() || 'png';
+        const nomeArquivoLimpo = nome.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+        const caminhoStorage = `outros/${Date.now()}_${nomeArquivoLimpo}.${ext}`;
 
+        const { error: uploadErr } = await supabase.storage
+          .from('personagens')
+          .upload(caminhoStorage, arquivo, {
+            cacheControl: '3600',
+            upsert: true,
+          });
+
+        if (uploadErr) {
+          throw new Error('Falha no upload para o storage: ' + uploadErr.message);
+        }
+
+        // Salva estritamente o caminho relativo "outros/..." na coluna imagem
+        caminhoFinal = caminhoStorage;
+      } else {
+        // Caso não coloque foto, utiliza o placeholder padrão
+        caminhoFinal = `https://placehold.co/400x400/161b26/f8cb47?text=${encodeURIComponent(nome.trim())}`;
+      }
+
+      // Insere o personagem na tabela do banco de dados
       const { data, error: insertErr } = await supabase
         .from('personagens')
-        .insert([{ nome: nome.trim(), imagem: nomeArquivo }])
+        .insert([{ nome: nome.trim(), imagem: caminhoFinal }])
         .select()
         .single();
+
       if (insertErr) throw insertErr;
 
       setEstado('salvo');
-      setPersonagemData(data);
       setPreview(getImagemUrl(data.imagem));
       onPersonagemConfirmado(data);
     } catch (err) {
-      setErro('Erro: ' + err.message);
+      setErro('Erro ao salvar personagem: ' + err.message);
     } finally {
       setSalvando(false);
     }
   }
 
+  function handleLimpar() {
+    setNome('');
+    setArquivo(null);
+    setUsarPlaceholder(false);
+    setPreview(null);
+    setEstado(null);
+    setErro('');
+    onPersonagemConfirmado(null);
+  }
+
   const corBorda =
     estado === 'encontrado' || estado === 'salvo'
-      ? 'var(--accent-green)'
+      ? 'var(--accent-green, #2ecc71)'
       : estado === 'novo'
-      ? 'var(--accent-red)'
+      ? 'var(--accent-red, #e74c3c)'
       : 'transparent';
 
   return (
@@ -114,6 +311,11 @@ function BlocoPersonagem({ label, cor, onPersonagemConfirmado }) {
       {/* Label e destaque de cor */}
       <div className="bloco-header" style={{ background: cor }}>
         <span className="bloco-label">{label}</span>
+        {personagemSelecionado && (
+          <button type="button" className="btn-trocar-personagem" onClick={handleLimpar} title="Trocar personagem">
+            Trocar ✕
+          </button>
+        )}
       </div>
 
       {/* Preview da imagem */}
@@ -121,8 +323,19 @@ function BlocoPersonagem({ label, cor, onPersonagemConfirmado }) {
         {preview ? (
           <img src={preview} alt="preview" className="bloco-img" />
         ) : (
-          <div className="bloco-placeholder">⚔</div>
+          <div className="bloco-placeholder">VS</div>
         )}
+      </div>
+
+      {/* Botão de Escolher do Banco */}
+      <div className="bloco-acoes-topo">
+        <button
+          type="button"
+          className="btn-abrir-modal-lista"
+          onClick={abrirModal}
+        >
+          Escolher da Lista
+        </button>
       </div>
 
       {/* Campo de nome */}
@@ -130,45 +343,52 @@ function BlocoPersonagem({ label, cor, onPersonagemConfirmado }) {
         <input
           type="text"
           className="campo-input"
-          placeholder="Digite o nome do personagem..."
+          placeholder="Ou digite o nome do personagem..."
           value={nome}
           onChange={(e) => setNome(e.target.value)}
           disabled={estado === 'salvo'}
         />
         <div className="bloco-status">
-          {estado === 'verificando' && <span className="status-verificando">🔄 Verificando...</span>}
+          {estado === 'verificando' && <span className="status-verificando">Verificando no banco...</span>}
           {estado === 'encontrado' && (
-            <span className="status-ok">✅ Encontrado no banco!</span>
+            <span className="status-ok">Personagem encontrado no banco</span>
           )}
           {estado === 'novo' && (
-            <span className="status-novo">🆕 Não cadastrado — adicione uma imagem abaixo</span>
+            <span className="status-novo">Não cadastrado. Envie uma foto ou use o placeholder:</span>
           )}
           {estado === 'salvo' && (
-            <span className="status-salvo">🎉 Personagem cadastrado com sucesso!</span>
+            <span className="status-salvo">Personagem cadastrado com sucesso!</span>
           )}
         </div>
       </div>
 
-      {/* Upload só aparece quando o personagem é novo ou para substituir */}
-      {(estado === 'novo') && (
+      {/* Upload quando o personagem é novo */}
+      {estado === 'novo' && (
         <div className="bloco-upload">
-          <p className="upload-instrucao">
-            📸 Selecione uma imagem para cadastrar <strong>"{nome}"</strong>:
-          </p>
-          <button
-            type="button"
-            className="btn-selecionar-img"
-            onClick={() => inputArquivoRef.current?.click()}
-          >
-            {arquivo ? `✔ ${arquivo.name}` : '📁 Escolher imagem'}
-          </button>
-          <input
-            ref={inputArquivoRef}
-            type="file"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={handleArquivo}
-          />
+          <div className="upload-controles-foto">
+            <button
+              type="button"
+              className="btn-selecionar-img"
+              onClick={() => inputArquivoRef.current?.click()}
+            >
+              {arquivo ? `Arquivo selecionado: ${arquivo.name}` : 'Selecionar foto do computador'}
+            </button>
+            <input
+              ref={inputArquivoRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={handleArquivo}
+            />
+
+            <button
+              type="button"
+              className={`btn-usar-placeholder ${usarPlaceholder ? 'btn-usar-placeholder--ativo' : ''}`}
+              onClick={handleAtivarPlaceholder}
+            >
+              Usar placeholder padrão
+            </button>
+          </div>
 
           {erro && <p className="bloco-erro">{erro}</p>}
 
@@ -176,23 +396,22 @@ function BlocoPersonagem({ label, cor, onPersonagemConfirmado }) {
             type="button"
             className="btn-salvar-personagem"
             onClick={handleSalvarNovo}
-            disabled={salvando || !arquivo}
+            disabled={salvando}
           >
-            {salvando ? '⏳ Salvando...' : '💾 Salvar Personagem'}
+            {salvando ? 'Salvando no Storage e Banco...' : 'Salvar Personagem'}
           </button>
         </div>
       )}
 
       {/* Dados do personagem encontrado / salvo */}
-      {(estado === 'encontrado' || estado === 'salvo') && personagemData && (
+      {(estado === 'encontrado' || estado === 'salvo') && (
         <div className="bloco-confirmacao">
-          <p className="confirmacao-nome">📋 <strong>{personagemData.nome}</strong></p>
-          <p className="confirmacao-id">ID: #{personagemData.id}</p>
+          <p className="confirmacao-nome"><strong>{nome}</strong></p>
           {estado === 'salvo' && (
-            <span className="confirmacao-badge">✅ Cadastrado agora</span>
+            <span className="confirmacao-badge">Cadastrado</span>
           )}
           {estado === 'encontrado' && (
-            <span className="confirmacao-badge confirmacao-badge--existente">✅ Já existia</span>
+            <span className="confirmacao-badge confirmacao-badge--existente">Pronto para lutar</span>
           )}
         </div>
       )}
@@ -209,53 +428,97 @@ export default function NovaBatalha() {
   const [usuarioLogado, setUsuarioLogado] = useState(null);
   const [criando, setCriando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
-  const [batalhaId, setBatalhaId] = useState(null);
   const [erro, setErro] = useState('');
 
+  // Estado do modal de personagens
+  const [modalAberto, setModalAberto] = useState(false);
+  const [ladoAlvo, setLadoAlvo] = useState('Personagem 1');
+
   useEffect(() => {
-    const userStr = localStorage.getItem('usuario_logado');
-    if (userStr) {
-      setUsuarioLogado(JSON.parse(userStr));
+    function verificarLogin() {
+      const userStr = localStorage.getItem('usuario_logado');
+      if (userStr) {
+        try {
+          const parsed = JSON.parse(userStr);
+          setUsuarioLogado(Array.isArray(parsed) ? parsed[0] : parsed);
+        } catch {
+          setUsuarioLogado(null);
+        }
+      } else {
+        setUsuarioLogado(null);
+      }
     }
+    verificarLogin();
   }, []);
+
+  function abrirModalPara(lado) {
+    setLadoAlvo(lado);
+    setModalAberto(true);
+  }
+
+  function handleSelecionarPersonagemDoModal(p) {
+    if (ladoAlvo === 'Personagem 1') {
+      setPersonagemA(p);
+    } else {
+      setPersonagemB(p);
+    }
+  }
+
   async function handleCriarBatalha() {
     setErro('');
-    if (!personagemA) { setErro('Personagem 1 não confirmado. Verifique ou cadastre-o.'); return; }
-    if (!personagemB) { setErro('Personagem 2 não confirmado. Verifique ou cadastre-o.'); return; }
-    if (personagemA.id === personagemB.id) { setErro('Os dois personagens são iguais!'); return; }
-    if (!usuarioLogado) { setErro('Você precisa estar logado para criar uma batalha.'); return; }
+
+    if (!usuarioLogado) {
+      setErro('Atenção: Você precisa estar logado para criar uma batalha.');
+      return;
+    }
+
+    if (!personagemA) {
+      setErro('Personagem 1 não foi confirmado. Escolha ou cadastre-o.');
+      return;
+    }
+    if (!personagemB) {
+      setErro('Personagem 2 não foi confirmado. Escolha ou cadastre-o.');
+      return;
+    }
+    if (personagemA.id === personagemB.id) {
+      setErro('Os dois personagens não podem ser iguais.');
+      return;
+    }
 
     setCriando(true);
     try {
-      // Verifica duplicata
+      // Verifica duplicata de batalha
       const { data: existente } = await supabase
         .from('postagem')
         .select('id')
-        .or(`and(id_personagem1.eq.${personagemA.id},id_personagem2.eq.${personagemB.id}),and(id_personagem1.eq.${personagemB.id},id_personagem2.eq.${personagemA.id})`)
+        .or(
+          `and(id_personagem1.eq.${personagemA.id},id_personagem2.eq.${personagemB.id}),and(id_personagem1.eq.${personagemB.id},id_personagem2.eq.${personagemA.id})`
+        )
         .limit(1);
 
       if (existente?.length) {
-        setErro('⚠️ Já existe uma batalha entre esses dois personagens!');
+        setErro('Já existe uma batalha entre esses dois personagens.');
         setCriando(false);
         return;
       }
 
-      const { data: nova, error: insertErr } = await supabase
+      const { error: insertErr } = await supabase
         .from('postagem')
-        .insert([{
-          id_usuario: usuarioLogado.id,
-          id_personagem1: personagemA.id,
-          id_personagem2: personagemB.id,
-          votos_personagem1: 0,
-          votos_personagem2: 0,
-        }])
+        .insert([
+          {
+            id_usuario: usuarioLogado.id,
+            id_personagem1: personagemA.id,
+            id_personagem2: personagemB.id,
+            votos_personagem1: 0,
+            votos_personagem2: 0,
+          },
+        ])
         .select()
         .single();
 
       if (insertErr) throw insertErr;
 
       setSucesso(true);
-      setBatalhaId(nova.id);
     } catch (err) {
       setErro('Erro ao criar batalha: ' + err.message);
     } finally {
@@ -268,22 +531,25 @@ export default function NovaBatalha() {
     return (
       <div className="nova-batalha-page">
         <div className="sucesso-card">
-          <div className="sucesso-icone">🎉</div>
-          <h2 className="sucesso-titulo">Batalha Criada!</h2>
+          <h2 className="sucesso-titulo">Batalha Criada com Sucesso</h2>
           <p className="sucesso-desc">
             <strong>{personagemA?.nome}</strong>
             <span className="sucesso-vs"> VS </span>
             <strong>{personagemB?.nome}</strong>
           </p>
-          <p className="sucesso-sub">A batalha foi registrada com sucesso no banco de dados.</p>
+          <p className="sucesso-sub">A batalha foi registrada no banco de dados e está aberta para votos e comentários.</p>
           <div className="sucesso-acoes">
-            <Link to="/batalhas" className="btn-ver-batalhas">🔥 Ver Batalhas</Link>
+            <Link to="/batalhas" className="btn-ver-batalhas">Ver Batalhas</Link>
             <button
               type="button"
               className="btn-nova-outra"
-              onClick={() => { setSucesso(false); setPersonagemA(null); setPersonagemB(null); }}
+              onClick={() => {
+                setSucesso(false);
+                setPersonagemA(null);
+                setPersonagemB(null);
+              }}
             >
-              ➕ Criar Outra
+              Criar Outra Batalha
             </button>
           </div>
         </div>
@@ -297,18 +563,37 @@ export default function NovaBatalha() {
     <div className="nova-batalha-page">
       <div className="nova-batalha-container">
         <div className="nova-batalha-header">
-          <h1 className="nova-batalha-titulo">⚔ Nova Batalha</h1>
+          <h1 className="nova-batalha-titulo">Nova Batalha</h1>
           <p className="nova-batalha-sub">
-            Digite o nome de cada personagem. Se não existir no banco, você poderá
-            cadastrá-lo com uma imagem.
+            Escolha dois guerreiros existentes ou cadastre novos personagens.
           </p>
         </div>
 
+        {/* Alerta Destacado caso a pessoa esteja deslogada */}
+        {!usuarioLogado && (
+          <div className="aviso-deslogado-box">
+            <div className="aviso-deslogado-conteudo">
+              <div>
+                <h4 className="aviso-deslogado-titulo">Você não está conectado</h4>
+                <p className="aviso-deslogado-texto">
+                  Para criar e registrar uma nova batalha na arena, você precisa estar autenticado no sistema.
+                </p>
+              </div>
+            </div>
+            <div className="aviso-deslogado-acoes">
+              <Link to="/login" className="btn-aviso-login">Fazer Login</Link>
+              <Link to="/cadastro" className="btn-aviso-cadastro">Criar Conta</Link>
+            </div>
+          </div>
+        )}
+
         <div className="blocos-wrapper">
           <BlocoPersonagem
-            label="Personagem 1"
+            label="PERSONAGEM 1"
             cor="linear-gradient(135deg, #f8cb47, #e5a800)"
             onPersonagemConfirmado={setPersonagemA}
+            personagemSelecionado={personagemA}
+            abrirModal={() => abrirModalPara('Personagem 1')}
           />
 
           <div className="vs-separador">
@@ -316,39 +601,43 @@ export default function NovaBatalha() {
           </div>
 
           <BlocoPersonagem
-            label="Personagem 2"
+            label="PERSONAGEM 2"
             cor="linear-gradient(135deg, #e74c3c, #c0392b)"
             onPersonagemConfirmado={setPersonagemB}
+            personagemSelecionado={personagemB}
+            abrirModal={() => abrirModalPara('Personagem 2')}
           />
         </div>
 
-        {/* Aviso se não estiver logado */}
-        {!usuarioLogado && (
-          <div className="aviso-login">
-            <p>⚠️ Você precisa estar logado para criar uma batalha.</p>
-            <Link to="/login" className="btn-ir-login">Fazer Login</Link>
-          </div>
-        )}
-
-        {/* Status e botão de criar */}
+        {/* Mensagem de Erro */}
         {erro && <p className="nova-batalha-erro">{erro}</p>}
 
+        {/* Botão de Criação */}
         <div className="criar-batalha-footer">
           {!prontoParaCriar && (
             <p className="aguardando-hint">
-              ⏳ Confirme os dois personagens acima para criar a batalha
+              Selecione ou cadastre os dois personagens acima para liberar a criação da batalha
             </p>
           )}
+
           <button
             className={`btn-criar-batalha ${prontoParaCriar && usuarioLogado ? 'btn-criar-batalha--pronto' : ''}`}
             onClick={handleCriarBatalha}
             disabled={criando || !prontoParaCriar || !usuarioLogado}
             type="button"
           >
-            {criando ? '⏳ Criando...' : '⚔ Criar Batalha'}
+            {criando ? 'Criando Batalha...' : 'Criar Batalha'}
           </button>
         </div>
       </div>
+
+      {/* Modal de Personagens (10 por página) */}
+      <ModalEscolherPersonagem
+        aberto={modalAberto}
+        onClose={() => setModalAberto(false)}
+        onSelect={handleSelecionarPersonagemDoModal}
+        ladoNome={ladoAlvo}
+      />
     </div>
   );
 }

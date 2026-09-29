@@ -1,6 +1,6 @@
 /* NavBar Component */
 .navbar {
-  background-color: var(--bg-dark);
+  background-color: var(--bg-dark, #161b26);
   height: 60px;
   display: flex;
   align-items: center;
@@ -17,30 +17,32 @@
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
-.menu-btn {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 22px;
-  cursor: pointer;
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: 1px;
+  color: var(--accent-yellow, #f8cb47);
+  transition: transform 0.2s, opacity 0.2s;
 }
 
-.search-bar {
-  background-color: var(--bg-main);
-  border: none;
-  border-radius: 20px;
-  padding: 6px 16px;
-  color: white;
-  width: 180px;
-  font-size: 13px;
-  outline: none;
+.nav-logo:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
 }
 
-.search-bar:focus {
-  outline: 2px solid var(--accent-yellow);
+.nav-logo-icon {
+  font-size: 20px;
+}
+
+.nav-logo-text {
+  color: #fff;
 }
 
 .nav-link {
@@ -54,7 +56,7 @@
 
 .nav-link:hover,
 .nav-link--ativo {
-  color: var(--accent-yellow);
+  color: var(--accent-yellow, #f8cb47);
 }
 
 .nav-link-btn {
@@ -65,14 +67,36 @@
 }
 
 .nav-sep {
-  color: var(--bg-light);
+  color: var(--bg-light, #2c3545);
   font-size: 12px;
+}
+
+.nav-user-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-user-nome {
+  color: var(--accent-yellow, #f8cb47);
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.btn-logout {
+  color: #ff6b6b;
+  font-size: 12px;
+}
+
+.btn-logout:hover {
+  color: #ff4757;
+  text-decoration: underline;
 }
 
 .user-icon {
   width: 32px;
   height: 32px;
-  background-color: var(--bg-light);
+  background-color: var(--bg-light, #2c3545);
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -83,14 +107,11 @@
 }
 
 .user-icon:hover {
-  background-color: var(--accent-yellow);
+  background-color: var(--accent-yellow, #f8cb47);
 }
 
 @media (max-width: 700px) {
   .nav-center {
     display: none;
-  }
-  .search-bar {
-    width: 120px;
   }
 }
