@@ -23,6 +23,7 @@ function Login_Cadastro() {
 
     const [verificaSenha, ConfereSenha] = useState("")
     const [arquivo, setArquivo] = useState(null)
+    const [plano, setPlano] = useState(0)
 
     async function inserirUser() {
         if (!nome || !email || !senha) {
@@ -57,7 +58,7 @@ function Login_Cadastro() {
             email: email,
             senha: !isNaN(Number(senha)) && senha !== "" ? Number(senha) : 123456,
             foto: caminhoFinalDaImagemNoStorage,
-            plano: 0,
+            plano: Number(plano),
             data_nascimento: nascimento || "2000-01-01"
         }
 
@@ -185,6 +186,13 @@ function Login_Cadastro() {
                             
                             <label style={{ display: 'block', color: '#fff', fontSize: '14px', marginTop: '10px' }}>Foto de perfil (opcional):</label>
                             <input type="file" accept="image/*" onChange={e => setArquivo(e.target.files[0])} style={{ padding: '8px', cursor: 'pointer', backgroundColor: '#fff', color: '#000' }} />
+
+                            <label style={{ display: 'block', color: '#fff', fontSize: '14px', marginTop: '15px' }}>Escolha seu plano:</label>
+                            <select value={plano} onChange={e => setPlano(e.target.value)} style={{ width: '100%', padding: '12px', marginTop: '5px', borderRadius: '8px', border: 'none', backgroundColor: '#21293a', color: '#fff', outline: 'none' }}>
+                                <option value={0}>Plano Gratuito</option>
+                                <option value={1}>Plano R$ 15 (Comentários em destaque e prioridade)</option>
+                                <option value={2}>Plano R$ 80 (Mais personalização e 2 votos por batalha)</option>
+                            </select>
                         </div>
 
                         <span>
