@@ -21,6 +21,7 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
   const [votos2, setVotos2] = useState(postagem.votos_personagem2 || 0);
   const [votando, setVotando] = useState(false);
   const [meuVoto, setMeuVoto] = useState(null); // 'p1' | 'p2' | null
+  const [erroVoto, setErroVoto] = useState('');
 
   const [comentarios, setComentarios] = useState([]);
   const [loadingComentarios, setLoadingComentarios] = useState(false);
@@ -62,7 +63,8 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
     }
 
     if (meuVoto) {
-      alert(`Você já votou nesta batalha no ${meuVoto === 'p1' ? p1?.nome : p2?.nome}!`);
+      setErroVoto(`Você já votou nesta batalha em ${meuVoto === 'p1' ? p1?.nome : p2?.nome}!`);
+      setTimeout(() => setErroVoto(''), 3000);
       return;
     }
 
@@ -87,7 +89,8 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
       setMeuVoto(lado);
       localStorage.setItem(`voto_post_${postagem.id}_user_${usuarioLogado.id}`, lado);
     } catch (err) {
-      alert('Erro ao registrar voto: ' + err.message);
+      setErroVoto('Erro ao registrar voto: ' + err.message);
+      setTimeout(() => setErroVoto(''), 3000);
     } finally {
       setVotando(false);
     }
@@ -98,10 +101,16 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
     try {
       const { data } = await supabase
         .from('comentarios')
-        .select('id, texto, data_comentario, id_usuarios, usuarios(nome, foto)')
+        .select('id, texto, data_comentario, id_usuarios, usuarios(nome, foto, plano)')
         .eq('id_postagem', postagem.id)
         .order('data_comentario', { ascending: true });
-      setComentarios(data || []);
+      // Ordenar por plano do usuário: VIP (2) > Pro (1) > Gratuito (0)
+      const sorted = (data || []).sort((a, b) => {
+        const pa = a.usuarios?.plano ?? 0;
+        const pb = b.usuarios?.plano ?? 0;
+        return pb - pa;
+      });
+      setComentarios(sorted);
     } finally {
       setLoadingComentarios(false);
     }
@@ -247,6 +256,11 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
         </div>
       </div>
 
+      {/* Mensagem de erro de voto inline */}
+      {erroVoto && (
+        <div className="batalha-erro-voto">{erroVoto}</div>
+      )}
+
       {/* Toggle Comentários */}
       <button className="btn-toggle-comentarios" onClick={toggleComentarios} type="button">
         <span className="chevron-icon">{comentariosAbertos ? '▾' : '▸'}</span>
@@ -277,6 +291,8 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
                     <div className="comentario-corpo">
                       <div className="comentario-meta">
                         <span className="comentario-autor">{c.usuarios?.nome || 'Guerreiro da Arena'}</span>
+                        {c.usuarios?.plano === 2 && <span className="comentario-badge-plano comentario-badge-vip">👑 VIP</span>}
+                        {c.usuarios?.plano === 1 && <span className="comentario-badge-plano comentario-badge-pro">⭐ Pro</span>}
                         <span className="comentario-data">
                           {new Date(c.data_comentario).toLocaleDateString('pt-BR')}
                         </span>

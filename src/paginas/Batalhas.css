@@ -660,3 +660,48 @@
     height: 100%;
   }
 }
+
+/* ── Erro de Voto Inline ────────────────────────────────────────── */
+.batalha-erro-voto {
+    margin: 8px 0;
+    background: rgba(255, 71, 87, 0.12);
+    border: 1px solid rgba(255, 71, 87, 0.35);
+    color: #ff4757;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    animation: erro-voto-in 0.25s ease;
+}
+@keyframes erro-voto-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Badges de Plano nos Comentários ────────────────────────────── */
+.comentario-badge-plano {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.comentario-badge-vip {
+    background: rgba(248, 203, 71, 0.15);
+    border: 1px solid rgba(248, 203, 71, 0.5);
+    color: #f8cb47;
+}
+
+.comentario-badge-pro {
+    background: rgba(129, 140, 248, 0.15);
+    border: 1px solid rgba(129, 140, 248, 0.5);
+    color: #818cf8;
+}
