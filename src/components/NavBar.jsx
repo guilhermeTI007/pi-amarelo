@@ -81,7 +81,7 @@ export default function NavBar() {
               type="button"
               title="Meu Perfil"
             >
-              👤 {usuarioLogado.nome || 'Meu Perfil'}
+              {usuarioLogado.nome || 'Meu Perfil'}
             </button>
             <span className="nav-sep">•</span>
             <button
@@ -116,7 +116,7 @@ export default function NavBar() {
               onClick={() => navigate('/login')}
               title="Entrar"
             >
-              👤
+              •
             </div>
           </>
         )}

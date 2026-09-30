@@ -92,12 +92,12 @@ export default function Perfil() {
     return (
       <div className="perfil-deslogado-page">
         <div className="perfil-deslogado-card">
-          <div className="perfil-deslogado-icone">👤</div>
+          <div className="perfil-deslogado-icone">•</div>
           <h2>Você não está conectado</h2>
           <p>Faça login ou crie sua conta para acessar seu perfil e visualizar seu histórico de batalhas e comentários.</p>
           <div className="perfil-deslogado-botoes">
-            <Link to="/login" className="btn-perfil-login">🔑 Fazer Login</Link>
-            <Link to="/cadastro" className="btn-perfil-cadastro">📝 Criar Conta</Link>
+            <Link to="/login" className="btn-perfil-login">Fazer Login</Link>
+            <Link to="/cadastro" className="btn-perfil-cadastro">Criar Conta</Link>
           </div>
         </div>
       </div>
@@ -122,7 +122,7 @@ export default function Perfil() {
             title="Sair da Conta"
             type="button"
           >
-            🚪 Sair
+            Sair
           </button>
 
           <div className="profile-pic-container">
@@ -190,7 +190,7 @@ export default function Perfil() {
               ⚔ Criar Nova Batalha
             </Link>
             <Link to="/batalhas" className="btn-bio-ver-batalhas">
-              🔥 Ir para a Arena de Batalhas
+              Ir para a Arena de Batalhas
             </Link>
           </div>
         </div>
@@ -212,7 +212,7 @@ export default function Perfil() {
             className={`tab-btn ${abaAtiva === 'comentarios' ? 'tab-btn--ativo' : ''}`}
             onClick={() => setAbaAtiva('comentarios')}
           >
-            💬 Histórico de Comentários ({comentarios.length})
+            Histórico de Comentários ({comentarios.length})
           </button>
         </div>
 
@@ -246,7 +246,7 @@ export default function Perfil() {
                             ? new Date(b.data_postagem).toLocaleDateString('pt-BR')
                             : ''}
                         </span>
-                        <span className="hist-votos">🔥 {total} votos</span>
+                        <span className="hist-votos">{total} votos</span>
                       </div>
 
                       <div className="hist-batalha-versus">
@@ -301,14 +301,14 @@ export default function Perfil() {
               <div className="historico-vazio">
                 <p>Você ainda não comentou em nenhuma batalha.</p>
                 <Link to="/batalhas" className="btn-criar-agora">
-                  🔥 Ir para Batalhas e Comentar
+                  Ir para Batalhas e Comentar
                 </Link>
               </div>
             ) : (
               <div className="historico-lista-comentarios">
                 {comentarios.map((c) => (
                   <div key={c.id} className="historico-comentario-item">
-                    <div className="hist-com-icone">💬</div>
+                    <div className="hist-com-icone">•</div>
                     <div className="hist-com-corpo">
                       <div className="hist-com-header">
                         <span className="hist-com-batalha">

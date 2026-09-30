@@ -132,7 +132,7 @@ export default function TelaInicial() {
                   {spotlight.personagem1?.nome} VS {spotlight.personagem2?.nome}
                 </span>
                 <span className="confronto-votos">
-                  {((spotlight.votos_personagem1 || 0) + (spotlight.votos_personagem2 || 0))} votos totais 🔥
+                  {((spotlight.votos_personagem1 || 0) + (spotlight.votos_personagem2 || 0))} votos totais
                 </span>
               </span>
               <span className="seta">›</span>
@@ -181,11 +181,11 @@ export default function TelaInicial() {
         {/* Comentários Recentes */}
         {comentariosRecentes.length > 0 && (
           <section className="painel">
-            <h2>💬 Comentários recentes</h2>
+            <h2>Comentários recentes</h2>
             <div className="comentarios-recentes">
               {comentariosRecentes.map((c) => (
                 <div key={c.id} className="comentario-recente">
-                  <div className="com-rec-avatar">👤</div>
+                  <div className="com-rec-avatar">•</div>
                   <div className="com-rec-corpo">
                     <div className="com-rec-meta">
                       <span className="com-rec-autor">{c.usuarios?.nome || 'Anônimo'}</span>
@@ -214,11 +214,11 @@ export default function TelaInicial() {
               <span className="link-rapido-txt">Personagens</span>
             </Link>
             <Link to="/batalhas" className="link-rapido link-batalhas">
-              <span className="link-rapido-icon">🔥</span>
+              <span className="link-rapido-icon">⚔</span>
               <span className="link-rapido-txt">Batalhas</span>
             </Link>
             <Link to="/nova-batalha" className="link-rapido link-nova">
-              <span className="link-rapido-icon">➕</span>
+              <span className="link-rapido-icon">+</span>
               <span className="link-rapido-txt">Nova Batalha</span>
             </Link>
           </div>

@@ -102,14 +102,14 @@ export default function Batalha() {
               <h3>Team {nomeBaseA}</h3>
               {comentariosA.map((c, i) => (
                 <div className="comentario" key={i}>
-                  <span className="comentario-icone" aria-hidden="true">👤</span>
+                  <span className="comentario-icone" aria-hidden="true">•</span>
                   <p>{c.texto}</p>
                   <div className="reacoes">
                     <button type="button" className="btn-descurtir" aria-label="Descurtir" onClick={() => reagir(comentariosA, setComentariosA, i, 'descurtir')}>
-                      👎 <span>{c.descurtir}</span>
+                      ▼ <span>{c.descurtir}</span>
                     </button>
                     <button type="button" className="btn-curtir" aria-label="Curtir" onClick={() => reagir(comentariosA, setComentariosA, i, 'curtir')}>
-                      👍 <span>{c.curtir}</span>
+                      ▲ <span>{c.curtir}</span>
                     </button>
                   </div>
                 </div>
@@ -120,14 +120,14 @@ export default function Batalha() {
               <h3>Team {nomeBaseB}</h3>
               {comentariosB.map((c, i) => (
                 <div className="comentario" key={i}>
-                  <span className="comentario-icone" aria-hidden="true">👤</span>
+                  <span className="comentario-icone" aria-hidden="true">•</span>
                   <p>{c.texto}</p>
                   <div className="reacoes">
                     <button type="button" className="btn-descurtir" aria-label="Descurtir" onClick={() => reagir(comentariosB, setComentariosB, i, 'descurtir')}>
-                      👎 <span>{c.descurtir}</span>
+                      ▼ <span>{c.descurtir}</span>
                     </button>
                     <button type="button" className="btn-curtir" aria-label="Curtir" onClick={() => reagir(comentariosB, setComentariosB, i, 'curtir')}>
-                      👍 <span>{c.curtir}</span>
+                      ▲ <span>{c.curtir}</span>
                     </button>
                   </div>
                 </div>

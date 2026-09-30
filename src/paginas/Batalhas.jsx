@@ -158,7 +158,7 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
       <div className="batalha-card-topo">
         <span className="batalha-badge">⚔ Batalha</span>
         <span className="batalha-data">{dataFormatada}</span>
-        <span className="batalha-votos">🔥 {totalVotos} voto(s) no total</span>
+        <span className="batalha-votos">{totalVotos} voto(s) no total</span>
       </div>
 
       {/* Confronto */}
@@ -185,8 +185,8 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
           <p className="batalha-pct">{pct1}%</p>
           <span className="batalha-contagem-votos">{votos1} voto(s)</span>
 
-          {vencedor === p1?.nome && <span className="badge-vencedor">🏆 Na Liderança</span>}
-          {meuVoto === 'p1' && <span className="badge-meu-voto">✔ Seu Voto</span>}
+          {vencedor === p1?.nome && <span className="badge-vencedor">Na Liderança</span>}
+          {meuVoto === 'p1' && <span className="badge-meu-voto">Seu Voto</span>}
 
           <button
             type="button"
@@ -194,7 +194,7 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
             onClick={() => handleVotar('p1')}
             disabled={votando || meuVoto !== null}
           >
-            {meuVoto === 'p1' ? '✔ Votado' : '⚔ Votar'}
+            {meuVoto === 'p1' ? 'Votado' : 'Votar'}
           </button>
         </div>
 
@@ -229,8 +229,8 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
           <p className="batalha-pct">{pct2}%</p>
           <span className="batalha-contagem-votos">{votos2} voto(s)</span>
 
-          {vencedor === p2?.nome && <span className="badge-vencedor">🏆 Na Liderança</span>}
-          {meuVoto === 'p2' && <span className="badge-meu-voto">✔ Seu Voto</span>}
+          {vencedor === p2?.nome && <span className="badge-vencedor">Na Liderança</span>}
+          {meuVoto === 'p2' && <span className="badge-meu-voto">Seu Voto</span>}
 
           <button
             type="button"
@@ -238,7 +238,7 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
             onClick={() => handleVotar('p2')}
             disabled={votando || meuVoto !== null}
           >
-            {meuVoto === 'p2' ? '✔ Votado' : '⚔ Votar'}
+            {meuVoto === 'p2' ? 'Votado' : 'Votar'}
           </button>
         </div>
       </div>
@@ -246,7 +246,7 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
       {/* Toggle Comentários */}
       <button className="btn-toggle-comentarios" onClick={toggleComentarios} type="button">
         <span className="chevron-icon">{comentariosAbertos ? '▾' : '▸'}</span>
-        💬 Discussão e Comentários ({totalComentarios})
+        Discussão e Comentários ({totalComentarios})
       </button>
 
       {comentariosAbertos && (
@@ -258,7 +258,7 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
           ) : (
             <>
               {comentarios.length === 0 && (
-                <p className="comentarios-vazio">Nenhum comentário ainda. Deixe sua opinião sobre quem venceria! 👇</p>
+                <p className="comentarios-vazio">Nenhum comentário ainda. Deixe sua opinião sobre quem venceria!</p>
               )}
               <div className="lista-comentarios">
                 {comentarios.map((c) => (
@@ -267,7 +267,7 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
                       {c.usuarios?.foto ? (
                         <img src={c.usuarios.foto} alt={c.usuarios.nome} />
                       ) : (
-                        <span>👤</span>
+                        <span>•</span>
                       )}
                     </div>
                     <div className="comentario-corpo">
@@ -308,7 +308,7 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
                   disabled={enviando}
                   type="button"
                 >
-                  {enviando ? '⏳ Enviando...' : '💬 Comentar'}
+                  {enviando ? 'Enviando...' : 'Comentar'}
                 </button>
               </div>
             </>
@@ -390,14 +390,14 @@ export default function Batalhas() {
       {!usuarioLogado && (
         <div className="aviso-deslogado-batalhas">
           <div className="aviso-deslogado-info">
-            <span className="aviso-icone-pulse">⚠️</span>
+            <span className="aviso-icone-pulse">!</span>
             <div>
               <strong>Visitante identificado:</strong>
               <p>Você precisa estar logado para votar nos lutadores e comentar nas batalhas.</p>
             </div>
           </div>
           <div className="aviso-deslogado-botoes">
-            <Link to="/login" className="btn-ir-login">🔑 Fazer Login</Link>
+            <Link to="/login" className="btn-ir-login">Fazer Login</Link>
             <Link to="/cadastro" className="btn-ir-cadastro">Cadastrar-se</Link>
           </div>
         </div>
@@ -407,13 +407,13 @@ export default function Batalhas() {
       {alertaLoginVisivel && (
         <div className="modal-login-bloqueio-overlay" onClick={() => setAlertaLoginVisivel(false)}>
           <div className="modal-login-bloqueio-card" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-login-icone">🔒</div>
+            <div className="modal-login-icone">Acesso Restrito</div>
             <h3>Login Obrigatório</h3>
             <p>
               Você precisa estar conectado à sua conta para <strong>{acaoBloqueada === 'votar' ? 'votar no seu lutador' : 'enviar comentários'}</strong>!
             </p>
             <div className="modal-login-acoes">
-              <Link to="/login" className="btn-ir-login">🔑 Ir para Login</Link>
+              <Link to="/login" className="btn-ir-login">Ir para Login</Link>
               <button
                 type="button"
                 className="btn-fechar-alerta"

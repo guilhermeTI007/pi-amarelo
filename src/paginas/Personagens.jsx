@@ -53,7 +53,7 @@ export default function Personagens() {
 
   function getImagemUrl(imagemPath) {
     if (!imagemPath) return null;
-    if (imagemPath.startsWith('http')) return imagemPath;
+    if (imagemPath.startsWith('http') || imagemPath.startsWith('data:')) return imagemPath;
     return BUCKET_URL + imagemPath;
   }
 
@@ -71,7 +71,7 @@ export default function Personagens() {
         <input
           className="personagens-busca"
           type="text"
-          placeholder="🔍 Filtrar personagem..."
+          placeholder="Filtrar personagem..."
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
         />
@@ -113,7 +113,7 @@ export default function Personagens() {
                     className="personagem-avatar-fallback"
                     style={{ display: p.imagem ? 'none' : 'flex' }}
                   >
-                    ⚔
+                    VS
                   </div>
                 </div>
                 <div className="personagem-info">
@@ -151,7 +151,7 @@ export default function Personagens() {
 
       <div className="personagens-acoes">
         <Link to="/nova-batalha" className="btn-nova-batalha">
-          ⚔ Criar Nova Batalha
+          Criar Nova Batalha
         </Link>
       </div>
     </div>

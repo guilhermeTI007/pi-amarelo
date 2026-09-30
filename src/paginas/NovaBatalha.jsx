@@ -11,13 +11,13 @@ function getImagemUrl(p) {
   return BUCKET_URL + p;
 }
 
-// ── Modal de Seleção de Personagem com Paginação (10 por página) ──
+// ── Modal de Seleção de Personagem com Paginação (50 por página) ──
 function ModalEscolherPersonagem({ aberto, onClose, onSelect, ladoNome }) {
   const [personagens, setPersonagens] = useState([]);
   const [loading, setLoading] = useState(false);
   const [busca, setBusca] = useState('');
   const [pagina, setPagina] = useState(1);
-  const ITENS_POR_PAGINA = 10;
+  const ITENS_POR_PAGINA = 50;
 
   useEffect(() => {
     if (aberto) {
@@ -122,7 +122,7 @@ function ModalEscolherPersonagem({ aberto, onClose, onSelect, ladoNome }) {
           )}
         </div>
 
-        {/* Paginação de 10 em 10 */}
+        {/* Paginação */}
         <div className="modal-personagens-paginacao">
           <button
             type="button"
@@ -247,7 +247,7 @@ function BlocoPersonagem({
       let caminhoFinal = '';
 
       if (arquivo) {
-        // Envia a foto fisicamente para o Supabase Storage no bucket 'personagens' dentro da pasta 'outros/'
+        // Envia a foto para o Supabase Storage no bucket 'personagens' dentro da pasta 'outros/'
         const ext = arquivo.name.split('.').pop() || 'png';
         const nomeArquivoLimpo = nome.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
         const caminhoStorage = `outros/${Date.now()}_${nomeArquivoLimpo}.${ext}`;
@@ -263,10 +263,11 @@ function BlocoPersonagem({
           throw new Error('Falha no upload para o storage: ' + uploadErr.message);
         }
 
-        // Salva estritamente o caminho relativo "outros/..." na coluna imagem
+        // Salva o caminho relativo "outros/..." na coluna imagem
         caminhoFinal = caminhoStorage;
       } else {
-        // Caso não coloque foto, utiliza o placeholder padrão
+        // Sem foto: salva caminho relativo para o placeholder no storage
+        // Usa uma URL de placeholder externa (não salva base64 no banco)
         caminhoFinal = `https://placehold.co/400x400/161b26/f8cb47?text=${encodeURIComponent(nome.trim())}`;
       }
 
@@ -631,7 +632,7 @@ export default function NovaBatalha() {
         </div>
       </div>
 
-      {/* Modal de Personagens (10 por página) */}
+      {/* Modal de Personagens */}
       <ModalEscolherPersonagem
         aberto={modalAberto}
         onClose={() => setModalAberto(false)}

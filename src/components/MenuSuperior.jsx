@@ -7,7 +7,7 @@ function MenuSuperior() {
              <nav className="navbar">
         <div className="nav-left">
             <button className="menu-btn">☰</button>
-            <input type="text" className="search-bar" placeholder="🔍 Buscar..."/>
+            <input type="text" className="search-bar" placeholder="Buscar..."/>
         </div>
         <div className="nav-center">
             <a href="#" className="nav-link">INICIAL</a>
@@ -20,7 +20,7 @@ function MenuSuperior() {
             <a href="#" className="nav-link">CADASTRAR</a>
             <span className="nav-link">•</span>
             <a href="#" className="nav-link">ENTRAR</a>
-            <div className="user-icon">👤</div>
+            <div className="user-icon">•</div>
         </div>
     </nav>
         </div>
