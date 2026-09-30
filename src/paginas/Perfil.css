@@ -155,6 +155,34 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
+.btn-alterar-foto {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-yellow, #f8cb47);
+  color: #111;
+  border: none;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: all 0.2s;
+}
+
+.btn-alterar-foto:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateX(-50%) scale(1.05);
+}
+
+.btn-alterar-foto:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .profile-nome {
   color: #fff;
   font-size: 1.25rem;

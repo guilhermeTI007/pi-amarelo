@@ -7,7 +7,7 @@ const BUCKET_URL = 'https://rqjleobhyxxqfgwzruxa.supabase.co/storage/v1/object/p
 
 function getImagemUrl(p) {
   if (!p) return null;
-  if (p.startsWith('http')) return p;
+  if (p.startsWith('http') || p.startsWith('data:')) return p;
   return BUCKET_URL + p;
 }
 
@@ -96,10 +96,6 @@ export default function TelaInicial() {
               <div className="stat">
                 <span className="stat-valor">{stats.batalhas.toLocaleString('pt-BR')}</span>
                 <span className="stat-label">Batalhas</span>
-              </div>
-              <div className="stat">
-                <span className="stat-valor">{stats.usuarios.toLocaleString('pt-BR')}</span>
-                <span className="stat-label">Usuários</span>
               </div>
             </div>
           </div>
@@ -190,7 +186,7 @@ export default function TelaInicial() {
                     <div className="com-rec-meta">
                       <span className="com-rec-autor">{c.usuarios?.nome || 'Anônimo'}</span>
                       <span className="com-rec-batalha">
-                        em{' '}
+                        {' '}em{' '}
                         <Link to="/batalhas" className="link-destaque">
                           {c.postagem?.personagem1?.nome} vs {c.postagem?.personagem2?.nome}
                         </Link>

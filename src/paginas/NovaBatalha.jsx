@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabase';
 import { useNavigate, Link } from 'react-router-dom';
+import ModalImagem from '../components/ModalImagem';
 import './NovaBatalha.css';
 
 const BUCKET_URL = 'https://rqjleobhyxxqfgwzruxa.supabase.co/storage/v1/object/public/personagens/';
@@ -159,13 +160,13 @@ function BlocoPersonagem({
 }) {
   const [nome, setNome] = useState('');
   const [arquivo, setArquivo] = useState(null);
-  const [usarPlaceholder, setUsarPlaceholder] = useState(false);
   const [preview, setPreview] = useState(null);
 
   // Estados: null=aguardando | 'verificando' | 'encontrado' | 'novo' | 'salvo'
   const [estado, setEstado] = useState(null);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
+  const [imagemModal, setImagemModal] = useState(null);
 
   const inputArquivoRef = useRef();
   const debounceRef = useRef();
@@ -187,7 +188,6 @@ function BlocoPersonagem({
     if (!nome.trim()) {
       setEstado(null);
       setArquivo(null);
-      setUsarPlaceholder(false);
       setPreview(null);
       setErro('');
       onPersonagemConfirmado(null);
@@ -222,15 +222,7 @@ function BlocoPersonagem({
     const f = e.target.files[0];
     if (!f) return;
     setArquivo(f);
-    setUsarPlaceholder(false);
     setPreview(URL.createObjectURL(f));
-    setErro('');
-  }
-
-  function handleAtivarPlaceholder() {
-    setArquivo(null);
-    setUsarPlaceholder(true);
-    setPreview(`https://placehold.co/400x400/161b26/f8cb47?text=${encodeURIComponent(nome.trim() || 'Personagem')}`);
     setErro('');
   }
 
@@ -240,36 +232,35 @@ function BlocoPersonagem({
       return;
     }
 
+    if (!arquivo) {
+      setErro('Por favor, selecione uma foto para o personagem.');
+      return;
+    }
+
     setSalvando(true);
     setErro('');
 
     try {
       let caminhoFinal = '';
 
-      if (arquivo) {
-        // Envia a foto para o Supabase Storage no bucket 'personagens' dentro da pasta 'outros/'
-        const ext = arquivo.name.split('.').pop() || 'png';
-        const nomeArquivoLimpo = nome.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
-        const caminhoStorage = `outros/${Date.now()}_${nomeArquivoLimpo}.${ext}`;
+      // Envia a foto para o Supabase Storage no bucket 'personagens' dentro da pasta 'outros/'
+      const ext = arquivo.name.split('.').pop() || 'png';
+      const nomeArquivoLimpo = nome.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const caminhoStorage = `outros/${Date.now()}_${nomeArquivoLimpo}.${ext}`;
 
-        const { error: uploadErr } = await supabase.storage
-          .from('personagens')
-          .upload(caminhoStorage, arquivo, {
-            cacheControl: '3600',
-            upsert: true,
-          });
+      const { error: uploadErr } = await supabase.storage
+        .from('personagens')
+        .upload(caminhoStorage, arquivo, {
+          cacheControl: '3600',
+          upsert: true,
+        });
 
-        if (uploadErr) {
-          throw new Error('Falha no upload para o storage: ' + uploadErr.message);
-        }
-
-        // Salva o caminho relativo "outros/..." na coluna imagem
-        caminhoFinal = caminhoStorage;
-      } else {
-        // Sem foto: salva caminho relativo para o placeholder no storage
-        // Usa uma URL de placeholder externa (não salva base64 no banco)
-        caminhoFinal = `https://placehold.co/400x400/161b26/f8cb47?text=${encodeURIComponent(nome.trim())}`;
+      if (uploadErr) {
+        throw new Error('Falha no upload para o storage: ' + uploadErr.message);
       }
+
+      // Salva o caminho relativo "outros/..." na coluna imagem
+      caminhoFinal = caminhoStorage;
 
       // Insere o personagem na tabela do banco de dados
       const { data, error: insertErr } = await supabase
@@ -293,7 +284,6 @@ function BlocoPersonagem({
   function handleLimpar() {
     setNome('');
     setArquivo(null);
-    setUsarPlaceholder(false);
     setPreview(null);
     setEstado(null);
     setErro('');
@@ -322,7 +312,7 @@ function BlocoPersonagem({
       {/* Preview da imagem */}
       <div className="bloco-preview">
         {preview ? (
-          <img src={preview} alt="preview" className="bloco-img" />
+          <img src={preview} alt="preview" className="bloco-img" onClick={() => setImagemModal(preview)} />
         ) : (
           <div className="bloco-placeholder">VS</div>
         )}
@@ -355,7 +345,7 @@ function BlocoPersonagem({
             <span className="status-ok">Personagem encontrado no banco</span>
           )}
           {estado === 'novo' && (
-            <span className="status-novo">Não cadastrado. Envie uma foto ou use o placeholder:</span>
+            <span className="status-novo">Não cadastrado. Envie uma foto:</span>
           )}
           {estado === 'salvo' && (
             <span className="status-salvo">Personagem cadastrado com sucesso!</span>
@@ -381,14 +371,6 @@ function BlocoPersonagem({
               style={{ display: 'none' }}
               onChange={handleArquivo}
             />
-
-            <button
-              type="button"
-              className={`btn-usar-placeholder ${usarPlaceholder ? 'btn-usar-placeholder--ativo' : ''}`}
-              onClick={handleAtivarPlaceholder}
-            >
-              Usar placeholder padrão
-            </button>
           </div>
 
           {erro && <p className="bloco-erro">{erro}</p>}
@@ -416,6 +398,8 @@ function BlocoPersonagem({
           )}
         </div>
       )}
+
+      {imagemModal && <ModalImagem url={imagemModal} onClose={() => setImagemModal(null)} />}
     </div>
   );
 }

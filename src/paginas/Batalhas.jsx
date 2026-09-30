@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { Link } from 'react-router-dom';
+import ModalImagem from '../components/ModalImagem';
 import './Batalhas.css';
 
 const BUCKET_URL = 'https://rqjleobhyxxqfgwzruxa.supabase.co/storage/v1/object/public/personagens/';
@@ -28,6 +29,7 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
   const [erroComentario, setErroComentario] = useState('');
   const [comentariosAbertos, setComentariosAbertos] = useState(false);
   const [totalComentarios, setTotalComentarios] = useState(0);
+  const [imagemModal, setImagemModal] = useState(null);
 
   // Carrega voto salvo localmente para o usuário logado
   useEffect(() => {
@@ -171,6 +173,7 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
                 src={getImagemUrl(p1.imagem)}
                 alt={p1.nome}
                 className="batalha-img"
+                onClick={() => setImagemModal(getImagemUrl(p1.imagem))}
                 onError={(e) => {
                   e.target.style.display = 'none';
                   if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
@@ -215,6 +218,7 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
                 src={getImagemUrl(p2.imagem)}
                 alt={p2.nome}
                 className="batalha-img"
+                onClick={() => setImagemModal(getImagemUrl(p2.imagem))}
                 onError={(e) => {
                   e.target.style.display = 'none';
                   if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
@@ -315,6 +319,8 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
           )}
         </div>
       )}
+
+      {imagemModal && <ModalImagem url={imagemModal} onClose={() => setImagemModal(null)} />}
     </article>
   );
 }

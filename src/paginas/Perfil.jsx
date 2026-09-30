@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabase';
 import { Link, useNavigate } from 'react-router-dom';
 import './Perfil.css';
@@ -18,6 +18,8 @@ export default function Perfil() {
   const [comentarios, setComentarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [abaAtiva, setAbaAtiva] = useState('batalhas'); // 'batalhas' | 'comentarios'
+  const [uploadingFoto, setUploadingFoto] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const userStr = localStorage.getItem('usuario_logado');
@@ -87,6 +89,48 @@ export default function Perfil() {
     navigate('/');
   }
 
+  async function handleTrocarFoto(e) {
+    const file = e.target.files[0];
+    if (!file || !usuario) return;
+
+    setUploadingFoto(true);
+    try {
+      const ext = file.name.split('.').pop() || 'png';
+      const nomeArquivoLimpo = usuario.nome.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const caminhoStorage = `outros/${Date.now()}_perfil_${nomeArquivoLimpo}.${ext}`;
+
+      // Upload para storage
+      const { error: uploadErr } = await supabase.storage
+        .from('personagens')
+        .upload(caminhoStorage, file, { cacheControl: '3600', upsert: true });
+
+      if (uploadErr) {
+        throw new Error('Erro no Storage: ' + uploadErr.message + '\n\nCertifique-se de ter criado uma Policy de INSERT no bucket "personagens"!');
+      }
+
+      const novaFotoUrl = `${BUCKET_URL}${caminhoStorage}`;
+
+      // Update banco de dados
+      const { error: updateErr } = await supabase
+        .from('usuarios')
+        .update({ foto: novaFotoUrl })
+        .eq('id', usuario.id);
+
+      if (updateErr) throw updateErr;
+
+      // Update local state and localStorage
+      const novoUser = { ...usuario, foto: novaFotoUrl };
+      setUsuario(novoUser);
+      localStorage.setItem('usuario_logado', JSON.stringify(novoUser));
+      alert('Foto de perfil atualizada com sucesso!');
+
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setUploadingFoto(false);
+    }
+  }
+
   // Se o usuário não estiver logado
   if (!loading && !usuario) {
     return (
@@ -133,6 +177,21 @@ export default function Perfil() {
               }
               alt="Foto de Perfil"
               className="profile-pic"
+            />
+            <button 
+              type="button" 
+              className="btn-alterar-foto" 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingFoto}
+            >
+              {uploadingFoto ? 'Enviando...' : '📷 Alterar'}
+            </button>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              style={{ display: 'none' }} 
+              accept="image/*" 
+              onChange={handleTrocarFoto} 
             />
           </div>
 

@@ -24,8 +24,8 @@
 }
 
 .nova-batalha-sub {
-  color: var(--bg-light, #a0aec0);
-  font-size: 14px;
+  color: #e2e8f0;
+  font-size: 16px;
   line-height: 1.6;
 }
 
@@ -133,7 +133,7 @@
 
 .bloco-label {
   font-weight: 900;
-  font-size: 13px;
+  font-size: 15px;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: #111;
@@ -170,8 +170,10 @@
 .bloco-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  background-color: #0b0f19;
+  cursor: pointer;
 }
 
 .bloco-placeholder {
@@ -226,6 +228,11 @@
   transition: border-color 0.2s;
 }
 
+.campo-input::placeholder {
+  color: #a0aec0;
+  opacity: 1;
+}
+
 .campo-input:focus {
   border-color: var(--accent-yellow, #f8cb47);
 }
@@ -239,14 +246,14 @@
   display: flex;
   align-items: center;
   padding: 8px 2px;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
 }
 
-.status-verificando { color: #a0aec0; }
-.status-ok          { color: #2ecc71; }
-.status-novo        { color: #e74c3c; }
-.status-salvo       { color: #2ecc71; }
+.status-verificando { color: #e2e8f0; }
+.status-ok          { color: #4cd137; }
+.status-novo        { color: #ff6b6b; }
+.status-salvo       { color: #4cd137; }
 
 /* Upload / Novo Personagem */
 .bloco-upload {
@@ -269,7 +276,8 @@
   border-radius: 8px;
   padding: 12px;
   color: #e2e8f0;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s;
   text-align: center;
@@ -280,35 +288,13 @@
   color: var(--accent-yellow, #f8cb47);
 }
 
-.btn-usar-placeholder {
-  background: #1e2638;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #cbd5e0;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: center;
-}
-
-.btn-usar-placeholder:hover {
-  background: #273248;
-  color: #fff;
-}
-
-.btn-usar-placeholder--ativo {
-  border-color: var(--accent-yellow, #f8cb47);
-  background: rgba(248, 203, 71, 0.15);
-  color: var(--accent-yellow, #f8cb47);
-}
+/* Removido btn-usar-placeholder */
 
 .bloco-erro {
-  color: #e74c3c;
-  font-size: 12px;
+  color: #ff6b6b;
+  font-size: 14px;
   margin-bottom: 8px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .btn-salvar-personagem {
@@ -395,8 +381,9 @@
 
 .aguardando-hint {
   text-align: center;
-  font-size: 13px;
-  color: var(--bg-light, #a0aec0);
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
 }
 
 .btn-criar-batalha {

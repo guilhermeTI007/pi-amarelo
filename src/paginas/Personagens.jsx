@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { Link } from 'react-router-dom';
+import ModalImagem from '../components/ModalImagem';
 import './Personagens.css';
 
 const BUCKET_URL = 'https://rqjleobhyxxqfgwzruxa.supabase.co/storage/v1/object/public/personagens/';
@@ -12,6 +13,7 @@ export default function Personagens() {
   const [busca, setBusca] = useState('');
   const [offset, setOffset] = useState(0);
   const [temMais, setTemMais] = useState(true);
+  const [imagemModal, setImagemModal] = useState(null);
   const limit = 20;
 
   useEffect(() => {
@@ -96,7 +98,7 @@ export default function Personagens() {
           <p className="personagens-count">{personagensFiltrados.length} personagem(s) encontrado(s)</p>
           <div className="personagens-grid">
             {personagensFiltrados.map((p) => (
-              <div key={p.id} className="personagem-card">
+              <div key={p.id} className="personagem-card" onClick={() => p.imagem && setImagemModal(getImagemUrl(p.imagem))}>
                 <div className="personagem-imagem-wrap">
                   {p.imagem ? (
                     <img
@@ -154,6 +156,8 @@ export default function Personagens() {
           Criar Nova Batalha
         </Link>
       </div>
+
+      {imagemModal && <ModalImagem url={imagemModal} onClose={() => setImagemModal(null)} />}
     </div>
   );
 }

@@ -56,13 +56,70 @@ body {
 }
 
 .stat-label {
-    font-size: 11px;
-    color: var(--bg-light);
+    font-size: 14px;
+    font-weight: 700;
+    color: #e2e8f0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .stat-valor {
-    font-weight: bold;
-    font-size: 16px;
+    font-weight: 900;
+    font-size: 28px;
+    color: var(--accent-yellow);
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+/* Comentários recentes */
+.comentarios-recentes {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.comentario-recente {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.com-rec-avatar {
+    color: var(--accent-yellow);
+    font-size: 20px;
+    line-height: 1;
+    margin-top: -2px;
+}
+
+.com-rec-corpo {
+    flex: 1;
+}
+
+.com-rec-meta {
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--bg-light);
+}
+
+.com-rec-autor {
+    font-weight: 800;
+    color: #fff;
+    margin-right: 4px;
+}
+
+.com-rec-batalha {
+    color: var(--bg-light);
+}
+
+.com-rec-texto {
+    font-size: 14px;
+    font-style: italic;
+    color: #cbd5e0;
+    line-height: 1.4;
 }
 
 .hero-cta {

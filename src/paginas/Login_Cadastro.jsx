@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabase";
+import { useLocation } from "react-router-dom";
 import "./Login_cadastro.css";
 
 function Login_Cadastro() {
+    const location = useLocation();
 
     const [usuario, alteraUsuario] = useState([])
 
     const [exibeUser, alteraExibeUser] = useState(false)
-    const [exibeCadastro, alteraExibeCadastro] = useState(true)
+    const [exibeCadastro, alteraExibeCadastro] = useState(location.pathname !== '/login')
+
+    useEffect(() => {
+        alteraExibeCadastro(location.pathname !== '/login');
+    }, [location.pathname]);
 
     const [nome, alteraNome] = useState("")
     const [nascimento, alteraData] = useState("")
@@ -16,6 +22,7 @@ function Login_Cadastro() {
     const [senha, alteraSenha] = useState("")
 
     const [verificaSenha, ConfereSenha] = useState("")
+    const [arquivo, setArquivo] = useState(null)
 
     async function inserirUser() {
         if (!nome || !email || !senha) {
@@ -23,11 +30,33 @@ function Login_Cadastro() {
             return;
         }
 
+        let caminhoFinalDaImagemNoStorage = "https://placehold.co/120x120/FFF/000?text=" + (nome ? encodeURIComponent(nome.charAt(0).toUpperCase()) : "U");
+
+        if (arquivo) {
+            const ext = arquivo.name.split('.').pop() || 'png';
+            const nomeArquivoLimpo = nome.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+            const caminhoStorage = `outros/${Date.now()}_${nomeArquivoLimpo}.${ext}`;
+
+            const { error: uploadErr } = await supabase.storage
+                .from('personagens')
+                .upload(caminhoStorage, arquivo, {
+                    cacheControl: '3600',
+                    upsert: true,
+                });
+
+            if (uploadErr) {
+                alert("Erro ao fazer upload da foto: " + uploadErr.message);
+                return;
+            }
+
+            caminhoFinalDaImagemNoStorage = `https://rqjleobhyxxqfgwzruxa.supabase.co/storage/v1/object/public/personagens/${caminhoStorage}`;
+        }
+
         const obj = {
             nome: nome,
             email: email,
             senha: !isNaN(Number(senha)) && senha !== "" ? Number(senha) : 123456,
-            foto: "https://placehold.co/120x120/FFF/000?text=" + (nome ? encodeURIComponent(nome.charAt(0).toUpperCase()) : "U"),
+            foto: caminhoFinalDaImagemNoStorage,
             plano: 0,
             data_nascimento: nascimento || "2000-01-01"
         }
@@ -153,6 +182,9 @@ function Login_Cadastro() {
                             <input type="email" onChange={e => alteraEmail(e.target.value)} placeholder="E-mail" />
                             <input type="password" onChange={e => alteraSenha(e.target.value)} placeholder="Senha" />
                             <input type="password" onChange={e => ConfereSenha(e.target.value)} placeholder="Confirmar senha" />
+                            
+                            <label style={{ display: 'block', color: '#fff', fontSize: '14px', marginTop: '10px' }}>Foto de perfil (opcional):</label>
+                            <input type="file" accept="image/*" onChange={e => setArquivo(e.target.files[0])} style={{ padding: '8px', cursor: 'pointer', backgroundColor: '#fff', color: '#000' }} />
                         </div>
 
                         <span>
