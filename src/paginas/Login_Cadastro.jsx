@@ -128,7 +128,7 @@ function Login_Cadastro() {
             if (!error && data && data.length > 0) {
                 localStorage.setItem("usuario_logado", JSON.stringify(Array.isArray(data) ? data[0] : data));
                 showToast("Conta criada com sucesso! Bem-vindo(a)!", "sucesso");
-                setTimeout(() => navigate("/"), 1200);
+                setTimeout(() => { window.location.href = "/"; }, 1200);
             } else {
                 showToast("Erro ao criar conta. Tente novamente.", "erro");
                 console.error(error);
@@ -149,7 +149,7 @@ function Login_Cadastro() {
             if (data && data.length > 0) {
                 localStorage.setItem("usuario_logado", JSON.stringify(Array.isArray(data) ? data[0] : data));
                 showToast("Bem-vindo(a) de volta!", "sucesso");
-                setTimeout(() => navigate("/"), 1000);
+                setTimeout(() => { window.location.href = "/"; }, 1000);
             } else {
                 showToast("Usuário ou senha incorretos. Tente novamente.", "erro");
             }

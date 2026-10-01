@@ -48,8 +48,9 @@
    - Texto do botão alterado de "Confirmar Troca" para "Confirmar troca e pagar" para refletir a imagem mock.
 
 
-7. **Melhorias Visuais no Perfil e Retorno dos Planos no Cadastro**
+7. **Melhorias Visuais no Perfil, Retorno dos Planos e Correção no Login**
    - Retornada a seleção de planos de assinatura no formulário de Cadastro de Usuário (`Login_Cadastro.jsx` e `Login_cadastro.css`).
+   - Corrigido o redirecionamento após o login e cadastro: usando `window.location.href = "/"` para garantir que toda a página e o menu recarreguem a sessão do usuário recém-logado.
    - Melhorada a legibilidade do plano "Gratuito" no Perfil (mudou a cor de `#4a5568` para `#ffffff` branco puro para máximo contraste).
    - Botão "Trocar Plano" e rótulo "Plano Atual" receberam cores e fundos mais claros (`#ffffff`) para se destacarem muito mais contra o fundo escuro da página (`Perfil.jsx` e `Perfil.css`).
    - Aumentado o tamanho da foto de perfil, ajustado o botão de "Alterar foto" para não sobrepor, e aumentada a fonte do badge do plano no `Perfil.css`.
