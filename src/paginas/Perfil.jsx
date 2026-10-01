@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "../supabase";
 import { Link, useNavigate } from "react-router-dom";
 import "./Perfil.css";
@@ -13,9 +13,9 @@ function getImagemUrl(p) {
 
 // ── Plan info ──────────────────────────────────────────────────────
 const PLANO_INFO = {
-    2: { label: "VIP — R$ 80/mês",     emoji: "👑", cor: "#f8cb47", desc: "2 votos por batalha" },
+    2: { label: "VIP — R$ 80/mês",     emoji: "👑", cor: "#f8cb47", desc: "Personalização do perfil" },
     1: { label: "Pro — R$ 15/mês",     emoji: "⭐", cor: "#818cf8", desc: "Comentários em destaque" },
-    0: { label: "Gratuito",             emoji: "🆓", cor: "#4a5568", desc: "Acesso básico" },
+    0: { label: "Gratuito",             emoji: "🆓",    cor: "#ffffff", desc: "Acesso básico" },
 };
 
 // ── Toast ──────────────────────────────────────────────────────────
@@ -42,9 +42,9 @@ function ModalTrocarPlano({ usuario, onClose, onSucesso, showToast }) {
     const [loading, setLoading] = useState(false);
 
     const planoOpcoes = [
-        { val: 2, emoji: "👑", nome: "VIP — R$ 80/mês", desc: "2 votos por batalha + personalização" },
+        { val: 2, emoji: "👑", nome: "VIP — R$ 80/mês", desc: "Personalização do perfil" },
         { val: 1, emoji: "⭐", nome: "Pro — R$ 15/mês", desc: "Comentários em destaque + prioridade" },
-        { val: 0, emoji: "🆓", nome: "Gratuito",         desc: "Acesso básico à arena" },
+        { val: 0, emoji: "🆓",    nome: "Gratuito",         desc: "Acesso básico à arena" },
     ];
 
     async function confirmar() {
@@ -98,7 +98,7 @@ function ModalTrocarPlano({ usuario, onClose, onSucesso, showToast }) {
 
                 <div className="perfil-modal-actions">
                     <button className="perfil-modal-btn perfil-modal-btn--primary" onClick={confirmar} disabled={loading}>
-                        {loading ? <span className="perfil-spinner" /> : "Confirmar Troca"}
+                        {loading ? <span className="perfil-spinner" /> : "Confirmar troca e pagar"}
                     </button>
                     <button className="perfil-modal-btn perfil-modal-btn--ghost" onClick={onClose} type="button">Cancelar</button>
                 </div>
@@ -235,7 +235,7 @@ export default function Perfil() {
                             className="profile-pic"
                         />
                         <button type="button" className="btn-alterar-foto" onClick={() => fileInputRef.current?.click()} disabled={uploadingFoto}>
-                            {uploadingFoto ? "Enviando..." : "📷 Alterar"}
+                            {uploadingFoto ? "Enviando..." : "Alterar foto"}
                         </button>
                         <input type="file" ref={fileInputRef} style={{ display: "none" }} accept="image/*" onChange={handleTrocarFoto} />
                     </div>
@@ -255,7 +255,7 @@ export default function Perfil() {
                         onClick={() => setShowModalPlano(true)}
                         type="button"
                     >
-                        🔄 Trocar Plano
+                        Trocar Plano
                     </button>
 
                     <div className="stats-container">
@@ -297,7 +297,7 @@ export default function Perfil() {
                             </strong>
                         </div>
                         <div className="bio-info-item bio-info-item--full">
-                            <span className="bio-info-label">Plano Atual:</span>
+                            <span className="bio-info-label" style={{ color: "#fff", fontWeight: "800" }}>Plano Atual:</span>
                             <strong className="bio-info-val" style={{ color: planoAtual.cor }}>
                                 {planoAtual.emoji} {planoAtual.label} — {planoAtual.desc}
                             </strong>
@@ -318,7 +318,7 @@ export default function Perfil() {
                         ⚔ Histórico de Batalhas ({batalhas.length})
                     </button>
                     <button type="button" className={`tab-btn ${abaAtiva === "comentarios" ? "tab-btn--ativo" : ""}`} onClick={() => setAbaAtiva("comentarios")}>
-                        💬 Histórico de Comentários ({comentarios.length})
+                        Histórico de Comentários ({comentarios.length})
                     </button>
                 </div>
 
@@ -381,7 +381,7 @@ export default function Perfil() {
                             <div className="historico-lista-comentarios">
                                 {comentarios.map(c => (
                                     <div key={c.id} className="historico-comentario-item">
-                                        <div className="hist-com-icone">💬</div>
+                                        <div className="hist-com-icone">•</div>
                                         <div className="hist-com-corpo">
                                             <div className="hist-com-header">
                                                 <span className="hist-com-batalha">

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "../supabase";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Login_cadastro.css";
@@ -15,8 +15,8 @@ function Toast({ mensagem, tipo, onClose }) {
             <span className="lc-toast-icon">
                 {tipo === "sucesso" ? "✓" : tipo === "erro" ? "✕" : "ℹ"}
             </span>
-            <span>{mensagem}</span>
-            <button className="lc-toast-close" onClick={onClose}>×</button>
+            <span className="lc-toast-text">{mensagem}</span>
+            <button className="lc-toast-close" onClick={onClose}>✕</button>
         </div>
     );
 }
@@ -76,12 +76,29 @@ function Login_Cadastro() {
     const [senha, alteraSenha] = useState("");
     const [verificaSenha, ConfereSenha] = useState("");
     const [arquivo, setArquivo] = useState(null);
-    const [plano, setPlano] = useState(0);
+    const [planoSelecionado, setPlanoSelecionado] = useState(0);
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ mensagem: "", tipo: "info" });
 
+    const planoOpcoes = [
+        { val: 2, emoji: "👑", nome: "VIP — R$ 80/mês", desc: "Personalização do perfil" },
+        { val: 1, emoji: "⭐", nome: "Pro — R$ 15/mês", desc: "Comentários em destaque" },
+        { val: 0, emoji: "🆓", nome: "Gratuito", desc: "Acesso básico" },
+    ];
+
     const showToast = useCallback((mensagem, tipo = "info") => setToast({ mensagem, tipo }), []);
     const closeToast = useCallback(() => setToast({ mensagem: "", tipo: "info" }), []);
+
+    function alternarModo(paraCadastro) {
+        alteraExibeCadastro(paraCadastro);
+        alteraNome("");
+        alteraEmail("");
+        alteraSenha("");
+        ConfereSenha("");
+        setArquivo(null);
+        setPlanoSelecionado(0);
+        navigate(paraCadastro ? "/cadastro" : "/login");
+    }
 
     async function inserirUser() {
         if (!nome || !email || !senha) { showToast("Preencha todos os campos obrigatórios", "erro"); return; }
@@ -105,7 +122,7 @@ function Login_Cadastro() {
             }
 
             const { error, data } = await supabase.from("usuarios").insert([{
-                nome, email, senha, foto: fotoUrl, plano: Number(plano), data_nascimento: nascimento || "2000-01-01"
+                nome, email, senha, foto: fotoUrl, plano: planoSelecionado, data_nascimento: nascimento || "2000-01-01"
             }]).select();
 
             if (!error && data && data.length > 0) {
@@ -141,71 +158,62 @@ function Login_Cadastro() {
 
     if (!checkedAuth) return null;
 
-    const planoOpcoes = [
-        { val: 0, label: "Gratuito", emoji: "🆓", desc: "Acesso básico à arena" },
-        { val: 1, label: "R$ 15/mês", emoji: "⭐", desc: "Comentários em destaque" },
-        { val: 2, label: "R$ 80/mês", emoji: "👑", desc: "VIP — 2 votos por batalha" },
-    ];
-
     return (
         <div className="lc-page">
             <Toast mensagem={toast.mensagem} tipo={toast.tipo} onClose={closeToast} />
             <div className="lc-wrapper">
-                <div className="lc-blob lc-blob--1" />
-                <div className="lc-blob lc-blob--2" />
                 <div className="lc-card">
                     {exibeCadastro ? (
                         <>
                             <div className="lc-card-header">
-                                <div className="lc-card-icon">⚔</div>
-                                <h1 className="lc-card-title">Criar sua Conta</h1>
-                                <p className="lc-card-subtitle">Junte-se à arena de batalhas</p>
+                                <h1 className="lc-card-title">Cadastrar Usuário</h1>
                             </div>
                             <div className="lc-form-group">
                                 <div className="lc-row-2">
                                     <div className="lc-field">
-                                        <label className="lc-label">Nome de usuário *</label>
-                                        <input className="lc-input" type="text" placeholder="ex: GuerreiroX" value={nome} onChange={e => alteraNome(e.target.value)} />
+                                        <input className="lc-input" type="text" placeholder="Nome de usuário" value={nome} onChange={e => alteraNome(e.target.value)} />
                                     </div>
                                     <div className="lc-field">
-                                        <label className="lc-label">Data de nascimento *</label>
-                                        <input className="lc-input" type="date" value={nascimento} onChange={e => alteraData(e.target.value)} />
+                                        <input className="lc-input" type="date" placeholder="Data de nascimento" value={nascimento} onChange={e => alteraData(e.target.value)} />
                                     </div>
                                 </div>
                                 <div className="lc-field">
-                                    <label className="lc-label">E-mail *</label>
-                                    <input className="lc-input" type="email" placeholder="seu@email.com" value={email} onChange={e => alteraEmail(e.target.value)} />
+                                    <input className="lc-input" type="email" placeholder="E-mail" value={email} onChange={e => alteraEmail(e.target.value)} />
                                 </div>
                                 <div className="lc-field">
-                                    <label className="lc-label">Senha * (mínimo 8 caracteres)</label>
-                                    <input className="lc-input" type="password" placeholder="••••••••" value={senha} onChange={e => alteraSenha(e.target.value)} />
+                                    <input className="lc-input" type="password" placeholder="senha" value={senha} onChange={e => alteraSenha(e.target.value)} />
                                     <PasswordChecker senha={senha} />
                                 </div>
                                 <div className="lc-field">
-                                    <label className="lc-label">Confirmar senha *</label>
                                     <input
                                         className={`lc-input ${verificaSenha && senha !== verificaSenha ? "lc-input--erro" : verificaSenha && senha === verificaSenha ? "lc-input--ok" : ""}`}
-                                        type="password" placeholder="••••••••" value={verificaSenha} onChange={e => ConfereSenha(e.target.value)}
+                                        type="password" placeholder="confirmar senha" value={verificaSenha} onChange={e => ConfereSenha(e.target.value)}
                                     />
                                     {verificaSenha && senha !== verificaSenha && <span className="lc-field-erro">As senhas não coincidem</span>}
                                     {verificaSenha && senha === verificaSenha && <span className="lc-field-ok">✓ Senhas coincidem</span>}
                                 </div>
                                 <div className="lc-field">
-                                    <label className="lc-label">Foto de perfil (opcional)</label>
-                                    <label className="lc-file-label">
+                                    <label className="lc-file-label" style={{ 
+                                        display: 'inline-flex', padding: '12px', background: '#3b3f54', borderRadius: '6px', 
+                                        border: '1.5px solid rgba(255, 255, 255, 0.18)', cursor: 'pointer', color: '#fff', fontSize: '13px'
+                                    }}>
                                         <input type="file" accept="image/*" onChange={e => setArquivo(e.target.files[0])} style={{ display: "none" }} />
-                                        <span className="lc-file-btn">📷 {arquivo ? arquivo.name.slice(0, 24) + "..." : "Escolher imagem"}</span>
+                                        <span className="lc-file-btn" style={{textAlign: 'center', width: '100%'}}>
+                                            {arquivo ? arquivo.name.slice(0, 24) + "..." : "Adicionar foto de perfil (Opcional)"}
+                                        </span>
                                     </label>
                                 </div>
-                                <div className="lc-field">
-                                    <label className="lc-label">Escolha seu plano</label>
-                                    <div className="lc-planos-grid">
+                                <div className="lc-planos">
+                                    <label className="lc-planos-label">Escolha seu plano (Opcional)</label>
+                                    <div className="lc-planos-lista">
                                         {planoOpcoes.map(op => (
-                                            <label key={op.val} className={`lc-plano-card ${Number(plano) === op.val ? "lc-plano-card--ativo" : ""}`}>
-                                                <input type="radio" name="plano" value={op.val} checked={Number(plano) === op.val} onChange={() => setPlano(op.val)} />
+                                            <label key={op.val} className={`lc-plano-item ${planoSelecionado === op.val ? "lc-plano-item--ativo" : ""}`}>
+                                                <input type="radio" name="plano" value={op.val} checked={planoSelecionado === op.val} onChange={() => setPlanoSelecionado(op.val)} />
                                                 <span className="lc-plano-emoji">{op.emoji}</span>
-                                                <span className="lc-plano-nome">{op.label}</span>
-                                                <span className="lc-plano-desc">{op.desc}</span>
+                                                <div className="lc-plano-info">
+                                                    <span className="lc-plano-nome">{op.nome}</span>
+                                                    <span className="lc-plano-desc">{op.desc}</span>
+                                                </div>
                                             </label>
                                         ))}
                                     </div>
@@ -213,24 +221,22 @@ function Login_Cadastro() {
                             </div>
                             <div className="lc-actions">
                                 <button className="lc-btn lc-btn--primary" onClick={inserirUser} disabled={loading}>
-                                    {loading ? <span className="lc-spinner" /> : "⚔ Criar Conta"}
+                                    {loading ? <span className="lc-spinner" /> : "CONTINUAR"}
                                 </button>
-                                <button className="lc-btn lc-btn--ghost" onClick={() => { alteraExibeCadastro(false); navigate("/login"); }} type="button">
-                                    Já tenho uma conta
+                                <button className="lc-btn lc-btn--ghost" onClick={() => alternarModo(false)} type="button">
+                                    Já tenho uma conta?
                                 </button>
                             </div>
                         </>
                     ) : (
                         <>
                             <div className="lc-card-header">
-                                <div className="lc-card-icon">🔐</div>
-                                <h1 className="lc-card-title">Entrar na Arena</h1>
-                                <p className="lc-card-subtitle">Bem-vindo(a) de volta, guerreiro!</p>
+                                <h1 className="lc-card-title">Entrar na conta</h1>
                             </div>
                             <div className="lc-form-group">
                                 <div className="lc-field">
-                                    <label className="lc-label">Nome de usuário ou E-mail</label>
-                                    <input className="lc-input" type="text" placeholder="Seu nome ou e-mail"
+                                    <input className="lc-input" type="text" placeholder="Nome de usuário ou E-mail"
+                                        value={email !== "" ? email : nome}
                                         onChange={e => {
                                             const val = e.target.value;
                                             if (val.includes("@")) { alteraEmail(val); alteraNome(""); }
@@ -239,8 +245,7 @@ function Login_Cadastro() {
                                     />
                                 </div>
                                 <div className="lc-field">
-                                    <label className="lc-label">Senha</label>
-                                    <input className="lc-input" type="password" placeholder="••••••••" value={senha}
+                                    <input className="lc-input" type="password" placeholder="senha" value={senha}
                                         onChange={e => alteraSenha(e.target.value)}
                                         onKeyDown={e => e.key === "Enter" && fazerLogin()}
                                     />
@@ -248,10 +253,10 @@ function Login_Cadastro() {
                             </div>
                             <div className="lc-actions">
                                 <button className="lc-btn lc-btn--primary" onClick={fazerLogin} disabled={loading}>
-                                    {loading ? <span className="lc-spinner" /> : "→ Entrar"}
+                                    {loading ? <span className="lc-spinner" /> : "CONTINUAR"}
                                 </button>
-                                <button className="lc-btn lc-btn--ghost" onClick={() => { alteraExibeCadastro(true); navigate("/cadastro"); }} type="button">
-                                    Criar nova conta
+                                <button className="lc-btn lc-btn--ghost" onClick={() => alternarModo(true)} type="button">
+                                    Criar novo usuário
                                 </button>
                             </div>
                         </>

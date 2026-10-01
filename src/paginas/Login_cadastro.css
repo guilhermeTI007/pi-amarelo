@@ -1,4 +1,4 @@
-﻿@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap");
 
 /* ── Page Layout ── */
 .lc-page {
@@ -6,7 +6,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #0b0f1a;
+    background: #5c6381;
     font-family: "Inter", sans-serif;
     padding: 24px 16px;
 }
@@ -14,77 +14,40 @@
 .lc-wrapper {
     position: relative;
     width: 100%;
-    max-width: 560px;
-}
-
-/* ── Decorative blobs ── */
-.lc-blob {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.25;
-    pointer-events: none;
-    z-index: 0;
-}
-.lc-blob--1 {
-    width: 380px;
-    height: 380px;
-    background: radial-gradient(circle, #7c3aed, #4f46e5);
-    top: -120px;
-    left: -120px;
-}
-.lc-blob--2 {
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, #f8cb47, #f59e0b);
-    bottom: -80px;
-    right: -80px;
+    max-width: 620px;
 }
 
 /* ── Card ── */
 .lc-card {
     position: relative;
     z-index: 1;
-    background: rgba(22, 27, 38, 0.92);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 24px;
-    padding: 40px 36px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(248, 203, 71, 0.05);
+    background: rgba(40, 44, 62, 0.95);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 48px 44px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
 
 /* ── Card Header ── */
 .lc-card-header {
     text-align: center;
-    margin-bottom: 32px;
-}
-
-.lc-card-icon {
-    font-size: 40px;
-    margin-bottom: 12px;
-    display: block;
+    margin-bottom: 36px;
 }
 
 .lc-card-title {
-    font-size: 1.9rem;
-    font-weight: 900;
+    font-size: 1.6rem;
+    font-weight: 800;
     color: #fff;
-    margin: 0 0 6px;
-    letter-spacing: -0.5px;
-}
-
-.lc-card-subtitle {
-    font-size: 14px;
-    color: #8892a4;
     margin: 0;
+    letter-spacing: -0.3px;
 }
 
 /* ── Form Groups ── */
 .lc-form-group {
     display: flex;
     flex-direction: column;
-    gap: 18px;
-    margin-bottom: 28px;
+    gap: 16px;
+    margin-bottom: 32px;
 }
 
 .lc-row-2 {
@@ -99,19 +62,11 @@
     gap: 6px;
 }
 
-.lc-label {
-    font-size: 12px;
-    font-weight: 700;
-    color: #a0aec0;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
 .lc-input {
-    background: rgba(15, 19, 28, 0.8);
-    border: 1.5px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    padding: 13px 16px;
+    background: #3b3f54;
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    border-radius: 6px;
+    padding: 14px 16px;
     color: #fff;
     font-size: 14px;
     font-family: "Inter", sans-serif;
@@ -122,19 +77,19 @@
 }
 
 .lc-input:focus {
-    border-color: #f8cb47;
-    box-shadow: 0 0 0 3px rgba(248, 203, 71, 0.12);
+    border-color: #8b92b0;
+    box-shadow: 0 0 0 2px rgba(139, 146, 176, 0.2);
 }
 
-.lc-input::placeholder { color: #4a5568; }
+.lc-input::placeholder { color: #8892a4; }
 
 .lc-input--erro {
     border-color: #ff4757 !important;
-    box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.12) !important;
+    box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.15) !important;
 }
 .lc-input--ok {
     border-color: #2ed573 !important;
-    box-shadow: 0 0 0 3px rgba(46, 213, 115, 0.12) !important;
+    box-shadow: 0 0 0 2px rgba(46, 213, 115, 0.15) !important;
 }
 
 .lc-field-erro { font-size: 12px; color: #ff4757; font-weight: 600; }
@@ -142,24 +97,24 @@
 
 /* ── Password Checker ── */
 .lc-password-checker {
-    background: rgba(10, 14, 22, 0.7);
+    background: rgba(30, 34, 50, 0.7);
     border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 10px;
-    padding: 14px;
-    margin-top: 8px;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 6px;
 }
 
 .lc-strength-bar {
     background: rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    height: 6px;
+    border-radius: 4px;
+    height: 5px;
     margin-bottom: 8px;
     overflow: hidden;
 }
 
 .lc-strength-fill {
     height: 100%;
-    border-radius: 6px;
+    border-radius: 4px;
     transition: width 0.4s ease, background-color 0.3s;
 }
 
@@ -169,7 +124,7 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .lc-checks-list {
@@ -178,7 +133,7 @@
     padding: 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 5px;
+    gap: 4px;
 }
 
 .lc-checks-list li {
@@ -191,77 +146,18 @@
 .lc-check-ok { color: #2ed573; }
 .lc-check-fail { color: #4a5568; }
 
-/* ── File Upload ── */
-.lc-file-label { cursor: pointer; display: block; }
-
-.lc-file-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(15, 19, 28, 0.8);
-    border: 1.5px dashed rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    padding: 13px 16px;
-    color: #8892a4;
-    font-size: 13px;
-    cursor: pointer;
-    transition: border-color 0.2s, color 0.2s;
-}
-
-.lc-file-btn:hover {
-    border-color: #f8cb47;
-    color: #f8cb47;
-}
-
-/* ── Plan cards ── */
-.lc-planos-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-}
-
-.lc-plano-card {
-    background: rgba(15, 19, 28, 0.8);
-    border: 1.5px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 14px 10px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    text-align: center;
-    transition: border-color 0.2s, background 0.2s, transform 0.15s;
-}
-
-.lc-plano-card input { display: none; }
-
-.lc-plano-card:hover {
-    border-color: rgba(248, 203, 71, 0.4);
-    transform: translateY(-2px);
-}
-
-.lc-plano-card--ativo {
-    border-color: #f8cb47 !important;
-    background: rgba(248, 203, 71, 0.08) !important;
-}
-
-.lc-plano-emoji { font-size: 22px; }
-.lc-plano-nome { font-size: 12px; font-weight: 800; color: #fff; }
-.lc-plano-desc { font-size: 10px; color: #8892a4; line-height: 1.3; }
-
 /* ── Actions ── */
 .lc-actions {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
 }
 
 .lc-btn {
-    width: 100%;
-    padding: 15px;
-    border-radius: 12px;
-    font-size: 15px;
+    padding: 13px 28px;
+    border-radius: 4px;
+    font-size: 13px;
     font-weight: 800;
     font-family: "Inter", sans-serif;
     cursor: pointer;
@@ -269,45 +165,47 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     transition: all 0.2s;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
 }
 
 .lc-btn--primary {
-    background: linear-gradient(135deg, #f8cb47, #f59e0b);
-    color: #111;
-    box-shadow: 0 4px 18px rgba(248, 203, 71, 0.3);
+    background: #2c3045;
+    color: #fff;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
 }
 
 .lc-btn--primary:hover:not(:disabled) {
-    filter: brightness(1.08);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 24px rgba(248, 203, 71, 0.4);
+    background: #3a3f58;
+    border-color: rgba(255, 255, 255, 0.35);
 }
 
-.lc-btn--primary:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+.lc-btn--primary:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .lc-btn--ghost {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #a0aec0;
-    font-size: 14px;
+    background: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    color: #b0b8cc;
+    font-size: 12px;
     font-weight: 600;
+    padding: 12px 20px;
+    border-radius: 4px;
 }
 
 .lc-btn--ghost:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.06);
     color: #fff;
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* ── Spinner ── */
 .lc-spinner {
-    width: 18px;
-    height: 18px;
-    border: 2.5px solid rgba(0, 0, 0, 0.2);
-    border-top-color: #000;
+    width: 16px;
+    height: 16px;
+    border: 2.5px solid rgba(255, 255, 255, 0.25);
+    border-top-color: #fff;
     border-radius: 50%;
     animation: lc-spin 0.7s linear infinite;
     display: inline-block;
@@ -324,31 +222,39 @@
     z-index: 9999;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 14px 20px;
-    border-radius: 14px;
-    font-size: 14px;
+    justify-content: space-between;
+    width: 380px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-size: 15px;
     font-weight: 600;
     font-family: "Inter", sans-serif;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    min-width: 280px;
-    max-width: 440px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
     animation: lc-toast-in 0.3s ease;
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(16px);
 }
 
 @keyframes lc-toast-in {
-    from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+    from { opacity: 0; transform: translateX(-50%) translateY(-15px); }
     to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
-.lc-toast--sucesso { background: rgba(46, 213, 115, 0.15); border: 1px solid rgba(46, 213, 115, 0.4); color: #2ed573; }
-.lc-toast--erro    { background: rgba(255, 71, 87, 0.15);  border: 1px solid rgba(255, 71, 87, 0.4);  color: #ff4757; }
-.lc-toast--info    { background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.4); color: #818cf8; }
+.lc-toast--sucesso { background: rgba(46, 213, 115, 0.25); border: 1px solid rgba(46, 213, 115, 0.4); color: #2ed573; }
+.lc-toast--erro    { background: rgba(255, 71, 87, 0.25);  border: 1px solid rgba(255, 71, 87, 0.4);  color: #ff4757; }
+.lc-toast--info    { background: rgba(99, 102, 241, 0.25); border: 1px solid rgba(99, 102, 241, 0.4); color: #818cf8; }
 
-.lc-toast-icon { font-size: 18px; font-weight: 900; flex-shrink: 0; }
+.lc-toast-icon { 
+    font-size: 20px; 
+    font-weight: 400; 
+    flex-shrink: 0; 
+}
 
-.lc-toast span { flex: 1; }
+.lc-toast-text { 
+    flex: 1; 
+    text-align: center;
+    line-height: 1.4;
+    margin: 0 12px;
+}
 
 .lc-toast-close {
     background: none;
@@ -367,5 +273,47 @@
 @media (max-width: 520px) {
     .lc-card { padding: 28px 20px; }
     .lc-row-2 { grid-template-columns: 1fr; }
-    .lc-planos-grid { grid-template-columns: 1fr; }
+    .lc-actions { flex-direction: column; }
 }
+
+/* ── Planos Selection in Register ── */
+.lc-planos {
+  margin-top: 24px;
+}
+.lc-planos-label {
+  display: block;
+  font-size: 12px;
+  color: #a0aec0;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.lc-planos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lc-plano-item {
+  background: rgba(15, 19, 28, 0.8);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s;
+}
+.lc-plano-item input { display: none; }
+.lc-plano-item:hover {
+  border-color: rgba(248, 203, 71, 0.3);
+  background: rgba(248, 203, 71, 0.04);
+}
+.lc-plano-item--ativo {
+  border-color: #f8cb47 !important;
+  background: rgba(248, 203, 71, 0.08) !important;
+}
+.lc-plano-emoji { font-size: 22px; flex-shrink: 0; }
+.lc-plano-info { display: flex; flex-direction: column; }
+.lc-plano-nome { font-size: 13px; font-weight: 800; color: #fff; }
+.lc-plano-desc { font-size: 11px; color: #8892a4; margin-top: 2px; }

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "../supabase";
 import { Link } from "react-router-dom";
 import ModalImagem from "../components/ModalImagem";
@@ -93,9 +93,15 @@ export default function Personagens() {
         return BUCKET_URL + imagemPath;
     }
 
-    function selecionarSugestao(nome) {
-        setBusca(nome);
+    function selecionarSugestao(sugestao) {
+        setBusca(sugestao.nome);
         setSugestoesVisiveis(false);
+        setPersonagens(prev => {
+            if (!prev.find(p => p.id === sugestao.id)) {
+                return [sugestao, ...prev];
+            }
+            return prev;
+        });
     }
 
     // Quando busca está ativa, filtra localmente. Quando vazia, exibe os 20 carregados.
@@ -114,7 +120,7 @@ export default function Personagens() {
                 {/* Search com autocomplete */}
                 <div className="personagens-busca-wrap" ref={buscaRef}>
                     <div className="personagens-busca-inner">
-                        <span className="personagens-busca-icon">🔍</span>
+                        <span className="personagens-busca-icon">•</span>
                         <input
                             className="personagens-busca"
                             type="text"
@@ -136,7 +142,7 @@ export default function Personagens() {
                                 <div className="personagens-sugestao-vazio">Nenhum personagem encontrado</div>
                             ) : (
                                 sugestoes.map(s => (
-                                    <div key={s.id} className="personagens-sugestao-item" onClick={() => selecionarSugestao(s.nome)}>
+                                    <div key={s.id} className="personagens-sugestao-item" onClick={() => selecionarSugestao(s)}>
                                         <div className="personagens-sugestao-img">
                                             {s.imagem ? (
                                                 <img src={getImagemUrl(s.imagem)} alt={s.nome} />
@@ -218,7 +224,7 @@ export default function Personagens() {
                     {busca.trim() && (
                         <div className="personagens-busca-info">
                             <span>
-                                🔍 Mostrando correspondências nos {personagens.length} personagens carregados.
+                                Mostrando correspondências nos {personagens.length} personagens carregados.
                                 {temMais && " Para busca mais ampla, limpe o filtro e carregue mais."}
                             </span>
                         </div>

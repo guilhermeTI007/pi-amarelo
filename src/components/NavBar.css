@@ -13,11 +13,20 @@
 }
 
 .nav-left,
-.nav-center,
 .nav-right {
   display: flex;
   align-items: center;
   gap: 14px;
+  z-index: 2;
+}
+
+.nav-center {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .nav-logo {
@@ -81,6 +90,17 @@
   color: var(--accent-yellow, #f8cb47);
   font-size: 14px;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .btn-logout {

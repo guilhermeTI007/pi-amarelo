@@ -81,6 +81,11 @@ export default function NavBar() {
               type="button"
               title="Meu Perfil"
             >
+              <img 
+                src={usuarioLogado.foto || `https://placehold.co/120x120/FFF/000?text=${usuarioLogado.nome ? encodeURIComponent(usuarioLogado.nome.charAt(0).toUpperCase()) : "U"}`} 
+                alt="Perfil" 
+                className="nav-user-avatar"
+              />
               {usuarioLogado.nome || 'Meu Perfil'}
             </button>
             <span className="nav-sep">•</span>
