@@ -12,31 +12,54 @@ function getImagemUrl(p) {
   return BUCKET_URL + p;
 }
 
-// ── Modal de Seleção de Personagem com Paginação (50 por página) ──
+// ── Modal de Seleção de Personagem com Paginação Server-Side ──
+const ITENS_POR_PAGINA = 50;
+
 function ModalEscolherPersonagem({ aberto, onClose, onSelect, ladoNome }) {
   const [personagens, setPersonagens] = useState([]);
   const [loading, setLoading] = useState(false);
   const [busca, setBusca] = useState('');
+  const [buscaInput, setBuscaInput] = useState('');
   const [pagina, setPagina] = useState(1);
-  const ITENS_POR_PAGINA = 50;
+  const [totalCount, setTotalCount] = useState(0);
+  const debounceRef = useRef(null);
 
+  // Carrega ao abrir ou ao mudar de página / busca
   useEffect(() => {
     if (aberto) {
-      carregarPersonagens();
+      carregarPersonagens(pagina, busca);
+    }
+  }, [aberto, pagina, busca]);
+
+  // Reseta ao abrir o modal
+  useEffect(() => {
+    if (aberto) {
       setPagina(1);
       setBusca('');
+      setBuscaInput('');
     }
   }, [aberto]);
 
-  async function carregarPersonagens() {
+  async function carregarPersonagens(pag, filtro) {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const inicio = (pag - 1) * ITENS_POR_PAGINA;
+      const fim = inicio + ITENS_POR_PAGINA - 1;
+
+      let query = supabase
         .from('personagens')
-        .select('*')
-        .order('nome', { ascending: true });
+        .select('*', { count: 'exact' })
+        .order('nome', { ascending: true })
+        .range(inicio, fim);
+
+      if (filtro && filtro.trim()) {
+        query = query.ilike('nome', `%${filtro.trim()}%`);
+      }
+
+      const { data, error, count } = await query;
       if (error) throw error;
       setPersonagens(data || []);
+      setTotalCount(count ?? 0);
     } catch (err) {
       console.error('Erro ao buscar personagens:', err);
     } finally {
@@ -44,15 +67,19 @@ function ModalEscolherPersonagem({ aberto, onClose, onSelect, ladoNome }) {
     }
   }
 
+  function handleBuscaChange(e) {
+    const val = e.target.value;
+    setBuscaInput(val);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setBusca(val);
+      setPagina(1);
+    }, 400);
+  }
+
   if (!aberto) return null;
 
-  const filtrados = personagens.filter((p) =>
-    p.nome?.toLowerCase().includes(busca.toLowerCase().trim())
-  );
-
-  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / ITENS_POR_PAGINA));
-  const inicio = (pagina - 1) * ITENS_POR_PAGINA;
-  const personagensPagina = filtrados.slice(inicio, inicio + ITENS_POR_PAGINA);
+  const totalPaginas = Math.max(1, Math.ceil(totalCount / ITENS_POR_PAGINA));
 
   return (
     <div className="modal-personagens-overlay" onClick={onClose}>
@@ -66,11 +93,8 @@ function ModalEscolherPersonagem({ aberto, onClose, onSelect, ladoNome }) {
           <input
             type="text"
             placeholder="Pesquisar personagem por nome..."
-            value={busca}
-            onChange={(e) => {
-              setBusca(e.target.value);
-              setPagina(1);
-            }}
+            value={buscaInput}
+            onChange={handleBuscaChange}
             autoFocus
           />
         </div>
@@ -81,13 +105,13 @@ function ModalEscolherPersonagem({ aberto, onClose, onSelect, ladoNome }) {
               <div className="spinner-sm" />
               <p>Carregando personagens...</p>
             </div>
-          ) : personagensPagina.length === 0 ? (
+          ) : personagens.length === 0 ? (
             <div className="modal-vazio">
               <p>Nenhum personagem encontrado no banco.</p>
               <small>Você pode fechar e cadastrar um novo lutador.</small>
             </div>
           ) : (
-            personagensPagina.map((p) => (
+            personagens.map((p) => (
               <div
                 key={p.id}
                 className="modal-personagem-item"
@@ -132,18 +156,18 @@ function ModalEscolherPersonagem({ aberto, onClose, onSelect, ladoNome }) {
           <button
             type="button"
             className="btn-pag"
-            disabled={pagina <= 1}
+            disabled={pagina <= 1 || loading}
             onClick={() => setPagina((p) => Math.max(1, p - 1))}
           >
             Anterior
           </button>
           <span className="info-pag">
-            Página <strong>{pagina}</strong> de <strong>{totalPaginas}</strong> ({filtrados.length} encontrados)
+            Página <strong>{pagina}</strong> de <strong>{totalPaginas}</strong> ({totalCount} encontrados)
           </span>
           <button
             type="button"
             className="btn-pag"
-            disabled={pagina >= totalPaginas}
+            disabled={pagina >= totalPaginas || loading}
             onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
           >
             Próxima
