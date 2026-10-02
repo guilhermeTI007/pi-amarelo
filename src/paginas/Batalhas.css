@@ -705,3 +705,31 @@
     border: 1px solid rgba(129, 140, 248, 0.5);
     color: #818cf8;
 }
+
+/* ── Bot\u00e3o Ver Batalha Completa ─────────────────────────────── */
+.batalha-card-rodape {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-ver-batalha {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid rgba(248, 203, 71, 0.35);
+    color: var(--accent-yellow, #f8cb47);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 9px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-ver-batalha:hover {
+    background: rgba(248, 203, 71, 0.1);
+    border-color: var(--accent-yellow, #f8cb47);
+    transform: translateX(3px);
+}

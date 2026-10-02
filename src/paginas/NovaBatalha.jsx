@@ -98,14 +98,18 @@ function ModalEscolherPersonagem({ aberto, onClose, onSelect, ladoNome }) {
               >
                 <div className="modal-personagem-avatar">
                   {p.imagem ? (
-                    <img
-                      src={getImagemUrl(p.imagem)}
-                      alt={p.nome}
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
-                      }}
-                    />
+                    p.imagem.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                      <video src={getImagemUrl(p.imagem)} autoPlay loop muted playsInline style={{ pointerEvents: 'none', width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <img
+                        src={getImagemUrl(p.imagem)}
+                        alt={p.nome}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    )
                   ) : null}
                   <span className="modal-avatar-fallback" style={{ display: p.imagem ? 'none' : 'flex' }}>
                     VS
@@ -222,6 +226,12 @@ function BlocoPersonagem({
   function handleArquivo(e) {
     const f = e.target.files[0];
     if (!f) return;
+    if (f.type.startsWith('video/')) {
+        if (f.size > 50 * 1024 * 1024) {
+            alert("Aviso: O arquivo de vídeo deve ter no máximo 50 MB.");
+            return;
+        }
+    }
     setArquivo(f);
     setPreview(URL.createObjectURL(f));
     setErro('');
@@ -318,29 +328,26 @@ function BlocoPersonagem({
       {/* Preview da imagem */}
       <div className="bloco-preview">
         {preview ? (
-          <img src={preview} alt="preview" className="bloco-img" onClick={() => setImagemModal(preview)} />
+          (arquivo?.type?.startsWith('video/') || (typeof preview === 'string' && preview.match(/\.(mp4|webm|ogg|mov)$/i))) ? (
+            <video src={preview} className="bloco-img" autoPlay loop muted playsInline style={{ pointerEvents: 'none' }} />
+          ) : (
+            <img src={preview} alt="preview" className="bloco-img" onClick={() => setImagemModal(preview)} />
+          )
         ) : (
           <div className="bloco-placeholder">VS</div>
         )}
       </div>
 
-      {/* Botão de Escolher do Banco */}
-      <div className="bloco-acoes-topo">
-        <button
-          type="button"
-          className="btn-abrir-modal-lista"
-          onClick={abrirModal}
-        >
-          Escolher da Lista
-        </button>
+      {/* 1ª Opção — Campo de nome */}
+      <div className="bloco-dica">
+        <span className="bloco-dica-titulo">1ª Opção — Digite o nome</span>
+        <span className="bloco-dica-desc">Pesquisamos automaticamente se o personagem já existe no banco.</span>
       </div>
-
-      {/* Campo de nome */}
       <div className="bloco-campo">
         <input
           type="text"
           className="campo-input"
-          placeholder="Ou digite o nome do personagem..."
+          placeholder="Ex: Goku, Naruto, Batman..."
           value={nome}
           onChange={(e) => setNome(e.target.value)}
           disabled={estado === 'salvo'}
@@ -359,21 +366,45 @@ function BlocoPersonagem({
         </div>
       </div>
 
+      {/* 2º — Ou escolher da lista */}
+      <div className="bloco-separador">
+        <span className="bloco-separador-linha" />
+        <span className="bloco-separador-texto">ou</span>
+        <span className="bloco-separador-linha" />
+      </div>
+      <div className="bloco-dica" style={{ marginBottom: '4px' }}>
+        <span className="bloco-dica-titulo">2ª Opção — Escolha da lista</span>
+        <span className="bloco-dica-desc">Pesquise e selecione um personagem já cadastrado.</span>
+      </div>
+      <div className="bloco-acoes-topo">
+        <button
+          type="button"
+          className="btn-abrir-modal-lista"
+          onClick={abrirModal}
+        >
+          Escolher da Lista
+        </button>
+      </div>
+
       {/* Upload quando o personagem é novo */}
       {estado === 'novo' && (
         <div className="bloco-upload">
+          <div className="bloco-dica">
+            <span className="bloco-dica-titulo">Etapa 2 — Adicione uma foto ou vídeo</span>
+            <span className="bloco-dica-desc">Escolha uma imagem ou vídeo de até 50 MB para representar esse personagem.</span>
+          </div>
           <div className="upload-controles-foto">
             <button
               type="button"
               className="btn-selecionar-img"
               onClick={() => inputArquivoRef.current?.click()}
             >
-              {arquivo ? `Arquivo selecionado: ${arquivo.name}` : 'Selecionar foto do computador'}
+              {arquivo ? `Arquivo selecionado: ${arquivo.name}` : 'Selecionar foto ou vídeo (máx. 50 MB)'}
             </button>
             <input
               ref={inputArquivoRef}
               type="file"
-              accept="image/*"
+              accept="image/*,video/*"
               style={{ display: 'none' }}
               onChange={handleArquivo}
             />

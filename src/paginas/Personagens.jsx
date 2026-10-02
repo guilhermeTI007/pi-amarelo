@@ -7,6 +7,13 @@ import "./Personagens.css";
 const BUCKET_URL = "https://rqjleobhyxxqfgwzruxa.supabase.co/storage/v1/object/public/personagens/";
 const LIMIT = 20;
 
+// Verifica se o caminho é um vídeo — ignora query-string da URL
+function isVideo(path) {
+    if (!path) return false;
+    const clean = path.split('?')[0];
+    return /\.(mp4|webm|ogg|mov|avi|mkv|flv|wmv)$/i.test(clean);
+}
+
 export default function Personagens() {
     const [personagens, setPersonagens] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -15,11 +22,10 @@ export default function Personagens() {
     const [temMais, setTemMais] = useState(true);
     const [imagemModal, setImagemModal] = useState(null);
 
-    // Busca / autocomplete
+    // Busca
     const [busca, setBusca] = useState("");
-    const [sugestoes, setSugestoes] = useState([]);
-    const [buscandoSugestoes, setBuscandoSugestoes] = useState(false);
-    const [sugestoesVisiveis, setSugestoesVisiveis] = useState(false);
+    const [resultadosBusca, setResultadosBusca] = useState([]);
+    const [buscandoDB, setBuscandoDB] = useState(false);
     const buscaRef = useRef(null);
     const debounceRef = useRef(null);
 
@@ -27,25 +33,25 @@ export default function Personagens() {
         buscarPersonagens(0);
     }, []);
 
-    // Autocomplete com debounce
+    // Busca completa no banco com debounce
     useEffect(() => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
-        if (!busca.trim()) { setSugestoes([]); setSugestoesVisiveis(false); return; }
+        if (!busca.trim()) { setResultadosBusca([]); return; }
 
         debounceRef.current = setTimeout(async () => {
-            setBuscandoSugestoes(true);
+            setBuscandoDB(true);
             try {
                 const { data } = await supabase
                     .from("personagens")
-                    .select("id, nome, imagem")
-                    .ilike("nome", `%${busca}%`)
-                    .limit(8);
-                setSugestoes(data || []);
-                setSugestoesVisiveis(true);
+                    .select("*")
+                    .ilike("nome", `%${busca.trim()}%`)
+                    .order("nome", { ascending: true })
+                    .limit(200);
+                setResultadosBusca(data || []);
             } finally {
-                setBuscandoSugestoes(false);
+                setBuscandoDB(false);
             }
-        }, 280);
+        }, 350);
 
         return () => clearTimeout(debounceRef.current);
     }, [busca]);
@@ -93,21 +99,8 @@ export default function Personagens() {
         return BUCKET_URL + imagemPath;
     }
 
-    function selecionarSugestao(sugestao) {
-        setBusca(sugestao.nome);
-        setSugestoesVisiveis(false);
-        setPersonagens(prev => {
-            if (!prev.find(p => p.id === sugestao.id)) {
-                return [sugestao, ...prev];
-            }
-            return prev;
-        });
-    }
-
-    // Quando busca está ativa, filtra localmente. Quando vazia, exibe os 20 carregados.
-    const personagensMostrados = busca.trim()
-        ? personagens.filter(p => p.nome.toLowerCase().includes(busca.toLowerCase()))
-        : personagens;
+    // Quando busca está ativa, usa resultados do banco. Quando vazia, exibe os carregados.
+    const personagensMostrados = busca.trim() ? resultadosBusca : personagens;
 
     return (
         <div className="personagens-page">
@@ -117,46 +110,23 @@ export default function Personagens() {
                 </h1>
                 <p className="personagens-sub">Explore os guerreiros do universo</p>
 
-                {/* Search com autocomplete */}
+                {/* Campo de busca */}
                 <div className="personagens-busca-wrap" ref={buscaRef}>
                     <div className="personagens-busca-inner">
-                        <span className="personagens-busca-icon">•</span>
+                        <span className="personagens-busca-icon">🔍</span>
                         <input
                             className="personagens-busca"
                             type="text"
-                            placeholder="Buscar personagem pelo nome..."
+                            placeholder="Buscar personagem pelo nome em todo o banco..."
                             value={busca}
                             onChange={e => setBusca(e.target.value)}
-                            onFocus={() => sugestoes.length > 0 && setSugestoesVisiveis(true)}
                         />
                         {busca && (
-                            <button className="personagens-busca-clear" onClick={() => { setBusca(""); setSugestoes([]); setSugestoesVisiveis(false); }}>×</button>
+                            <button className="personagens-busca-clear" onClick={() => { setBusca(""); setResultadosBusca([]); }}>×</button>
                         )}
                     </div>
-
-                    {sugestoesVisiveis && (
-                        <div className="personagens-sugestoes">
-                            {buscandoSugestoes ? (
-                                <div className="personagens-sugestao-loading">Buscando...</div>
-                            ) : sugestoes.length === 0 ? (
-                                <div className="personagens-sugestao-vazio">Nenhum personagem encontrado</div>
-                            ) : (
-                                sugestoes.map(s => (
-                                    <div key={s.id} className="personagens-sugestao-item" onClick={() => selecionarSugestao(s)}>
-                                        <div className="personagens-sugestao-img">
-                                            {s.imagem ? (
-                                                <img src={getImagemUrl(s.imagem)} alt={s.nome} />
-                                            ) : (
-                                                <span>⚔</span>
-                                            )}
-                                        </div>
-                                        <span className="personagens-sugestao-nome">
-                                            {s.nome}
-                                        </span>
-                                    </div>
-                                ))
-                            )}
-                        </div>
+                    {buscandoDB && busca.trim() && (
+                        <div className="personagens-sugestao-loading" style={{ padding: '8px 14px', fontSize: '13px', color: '#a0aec0' }}>Buscando no banco...</div>
                     )}
                 </div>
             </div>
@@ -179,21 +149,38 @@ export default function Personagens() {
                 <>
                     <p className="personagens-count">
                         {busca.trim()
-                            ? `${personagensMostrados.length} resultado(s) para "${busca}"`
+                            ? `${personagensMostrados.length} resultado(s) para "${busca}" (busca em todo o banco)`
                             : `${personagens.length} personagem(s) carregado(s)`}
                     </p>
 
                     <div className="personagens-grid">
                         {personagensMostrados.map(p => (
-                            <div key={p.id} className="personagem-card" onClick={() => p.imagem && setImagemModal(getImagemUrl(p.imagem))}>
+                            <div
+                                key={p.id}
+                                className="personagem-card"
+                                onClick={() => p.imagem && setImagemModal(getImagemUrl(p.imagem))}
+                                style={{ cursor: p.imagem ? 'pointer' : 'default' }}
+                            >
                                 <div className="personagem-imagem-wrap">
                                     {p.imagem ? (
-                                        <img
-                                            src={getImagemUrl(p.imagem)}
-                                            alt={p.nome}
-                                            className="personagem-imagem"
-                                            onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
-                                        />
+                                        isVideo(p.imagem) ? (
+                                            <video
+                                                src={getImagemUrl(p.imagem)}
+                                                autoPlay
+                                                loop
+                                                muted
+                                                playsInline
+                                                className="personagem-imagem"
+                                                style={{ pointerEvents: 'none' }}
+                                            />
+                                        ) : (
+                                            <img
+                                                src={getImagemUrl(p.imagem)}
+                                                alt={p.nome}
+                                                className="personagem-imagem"
+                                                onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
+                                            />
+                                        )
                                     ) : null}
                                     <div className="personagem-avatar-fallback" style={{ display: p.imagem ? "none" : "flex" }}>VS</div>
                                 </div>
@@ -205,28 +192,18 @@ export default function Personagens() {
                         ))}
                     </div>
 
-                    {personagensMostrados.length === 0 && !loading && (
+                    {personagensMostrados.length === 0 && !loading && !buscandoDB && (
                         <div className="personagens-vazio">
-                            <p>Nenhum personagem encontrado para "{busca}".</p>
+                            <p>{busca.trim() ? `Nenhum personagem encontrado para "${busca}".` : 'Nenhum personagem cadastrado ainda.'}</p>
                         </div>
                     )}
 
-                    {/* "Carregar mais" só aparece quando NÃO está filtrando */}
+                    {/* "Carregar mais" só aparece quando NÃO está buscando */}
                     {!busca.trim() && temMais && !loading && (
                         <div className="personagens-carregar-mais">
                             <button className="btn-carregar-mais" onClick={carregarMais}>
                                 Carregar mais personagens
                             </button>
-                        </div>
-                    )}
-
-                    {/* Aviso quando está filtrando e só exibe locais */}
-                    {busca.trim() && (
-                        <div className="personagens-busca-info">
-                            <span>
-                                Mostrando correspondências nos {personagens.length} personagens carregados.
-                                {temMais && " Para busca mais ampla, limpe o filtro e carregue mais."}
-                            </span>
                         </div>
                     )}
                 </>

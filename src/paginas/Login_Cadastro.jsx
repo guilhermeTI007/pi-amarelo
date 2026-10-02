@@ -197,7 +197,14 @@ function Login_Cadastro() {
                                         display: 'inline-flex', padding: '12px', background: '#3b3f54', borderRadius: '6px', 
                                         border: '1.5px solid rgba(255, 255, 255, 0.18)', cursor: 'pointer', color: '#fff', fontSize: '13px'
                                     }}>
-                                        <input type="file" accept="image/*" onChange={e => setArquivo(e.target.files[0])} style={{ display: "none" }} />
+                                        <input type="file" accept="image/*,video/*" onChange={e => {
+                                            const f = e.target.files[0];
+                                            if (f && f.type.startsWith('video/') && f.size > 50 * 1024 * 1024) {
+                                                alert("Aviso: O arquivo de vídeo deve ter no máximo 50 MB.");
+                                                return;
+                                            }
+                                            setArquivo(f);
+                                        }} style={{ display: "none" }} />
                                         <span className="lc-file-btn" style={{textAlign: 'center', width: '100%'}}>
                                             {arquivo ? arquivo.name.slice(0, 24) + "..." : "Adicionar foto de perfil (Opcional)"}
                                         </span>

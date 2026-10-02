@@ -721,3 +721,50 @@
     flex-direction: column;
   }
 }
+
+/* ── Dicas de etapas no bloco personagem ────────────────────────── */
+.bloco-dica {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 5px 10px;
+  background: rgba(248, 203, 71, 0.06);
+  border-left: 3px solid var(--accent-yellow, #f8cb47);
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 6px;
+}
+
+.bloco-dica-titulo {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent-yellow, #f8cb47);
+  letter-spacing: 0.3px;
+}
+
+.bloco-dica-desc {
+  font-size: 11px;
+  color: #a0aec0;
+  line-height: 1.4;
+}
+
+/* Separador "ou" */
+.bloco-separador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 4px;
+}
+
+.bloco-separador-linha {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.bloco-separador-texto {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4a5568;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}

@@ -171,6 +171,10 @@ export default function Perfil() {
     async function handleTrocarFoto(e) {
         const file = e.target.files[0];
         if (!file || !usuario) return;
+        if (file.type.startsWith('video/') && file.size > 50 * 1024 * 1024) {
+            alert("Aviso: O arquivo de vídeo deve ter no máximo 50 MB.");
+            return;
+        }
         setUploadingFoto(true);
         try {
             const ext = file.name.split(".").pop() || "png";
@@ -237,15 +241,19 @@ export default function Perfil() {
                     </button>
 
                     <div className="profile-pic-container">
-                        <img
-                            src={usuario?.foto || `https://placehold.co/120x120/FFF/000?text=${usuario?.nome ? encodeURIComponent(usuario.nome.charAt(0).toUpperCase()) : "U"}`}
-                            alt="Foto de Perfil"
-                            className="profile-pic"
-                        />
+                        {usuario?.foto?.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                            <video src={usuario.foto} autoPlay loop muted playsInline className="profile-pic" style={{ pointerEvents: 'none', objectFit: 'cover' }} />
+                        ) : (
+                            <img
+                                src={usuario?.foto || `https://placehold.co/120x120/FFF/000?text=${usuario?.nome ? encodeURIComponent(usuario.nome.charAt(0).toUpperCase()) : "U"}`}
+                                alt="Foto de Perfil"
+                                className="profile-pic"
+                            />
+                        )}
                         <button type="button" className="btn-alterar-foto" onClick={() => fileInputRef.current?.click()} disabled={uploadingFoto}>
                             {uploadingFoto ? "Enviando..." : "Alterar foto"}
                         </button>
-                        <input type="file" ref={fileInputRef} style={{ display: "none" }} accept="image/*" onChange={handleTrocarFoto} />
+                        <input type="file" ref={fileInputRef} style={{ display: "none" }} accept="image/*,video/*" onChange={handleTrocarFoto} />
                     </div>
 
                     <h2 className="profile-nome">{usuario?.nome || "Guerreiro da Arena"}</h2>
@@ -356,7 +364,13 @@ export default function Perfil() {
                                             <div className="hist-batalha-versus">
                                                 <div className="hist-lutador">
                                                     <div className="hist-avatar">
-                                                        {b.personagem1?.imagem ? <img src={getImagemUrl(b.personagem1.imagem)} alt={b.personagem1.nome} /> : <span>⚔</span>}
+                                                        {b.personagem1?.imagem ? (
+                                                            b.personagem1.imagem.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                                                                <video src={getImagemUrl(b.personagem1.imagem)} autoPlay loop muted playsInline style={{ pointerEvents: 'none', width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                            ) : (
+                                                                <img src={getImagemUrl(b.personagem1.imagem)} alt={b.personagem1.nome} />
+                                                            )
+                                                        ) : <span>⚔</span>}
                                                     </div>
                                                     <span className="hist-lutador-nome">{b.personagem1?.nome || "Lutador 1"}</span>
                                                     <span className="hist-lutador-votos">{b.votos_personagem1 || 0} votos</span>
@@ -364,7 +378,13 @@ export default function Perfil() {
                                                 <span className="hist-vs">VS</span>
                                                 <div className="hist-lutador">
                                                     <div className="hist-avatar">
-                                                        {b.personagem2?.imagem ? <img src={getImagemUrl(b.personagem2.imagem)} alt={b.personagem2.nome} /> : <span>⚔</span>}
+                                                        {b.personagem2?.imagem ? (
+                                                            b.personagem2.imagem.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                                                                <video src={getImagemUrl(b.personagem2.imagem)} autoPlay loop muted playsInline style={{ pointerEvents: 'none', width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                            ) : (
+                                                                <img src={getImagemUrl(b.personagem2.imagem)} alt={b.personagem2.nome} />
+                                                            )
+                                                        ) : <span>⚔</span>}
                                                     </div>
                                                     <span className="hist-lutador-nome">{b.personagem2?.nome || "Lutador 2"}</span>
                                                     <span className="hist-lutador-votos">{b.votos_personagem2 || 0} votos</span>
@@ -429,7 +449,13 @@ export default function Perfil() {
                                         <div className="hist-batalha-versus">
                                             <div className="hist-lutador">
                                                 <div className="hist-avatar">
-                                                    {p.imagem ? <img src={getImagemUrl(p.imagem)} alt={p.nome} /> : <span>⚔</span>}
+                                                    {p.imagem ? (
+                                                        p.imagem.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                                                            <video src={getImagemUrl(p.imagem)} autoPlay loop muted playsInline style={{ pointerEvents: 'none', width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        ) : (
+                                                            <img src={getImagemUrl(p.imagem)} alt={p.nome} />
+                                                        )
+                                                    ) : <span>⚔</span>}
                                                 </div>
                                                 <span className="hist-lutador-nome">{p.nome}</span>
                                             </div>

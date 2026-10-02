@@ -5,6 +5,7 @@ import TelaInicial from './paginas/TelaInicial';
 import Personagens from './paginas/Personagens';
 import NovaBatalha from './paginas/NovaBatalha';
 import Batalhas from './paginas/Batalhas';
+import BatalhaDetalhe from './paginas/BatalhaDetalhe';
 import Perfil from './paginas/Perfil';
 import Login_Cadastro from './paginas/Login_Cadastro';
 
@@ -35,6 +36,7 @@ function App() {
           {/* Batalhas com votação e comentários */}
           <Route path="/batalhas" element={<Batalhas />} />
           <Route path="/batalha" element={<Batalhas />} />
+          <Route path="/batalha/:id" element={<BatalhaDetalhe />} />
 
           {/* Login e Cadastro */}
           <Route path="/login" element={<Login_Cadastro />} />

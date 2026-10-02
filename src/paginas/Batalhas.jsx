@@ -336,6 +336,13 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
         </div>
       )}
 
+      {/* Botão Ver Batalha */}
+      <div className="batalha-card-rodape">
+        <Link to={`/batalha/${postagem.id}`} className="btn-ver-batalha">
+          Ver Batalha Completa →
+        </Link>
+      </div>
+
       {imagemModal && <ModalImagem url={imagemModal} onClose={() => setImagemModal(null)} />}
     </article>
   );
