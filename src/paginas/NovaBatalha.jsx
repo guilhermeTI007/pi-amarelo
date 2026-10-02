@@ -157,6 +157,7 @@ function BlocoPersonagem({
   onPersonagemConfirmado,
   personagemSelecionado,
   abrirModal,
+  usuarioLogado,
 }) {
   const [nome, setNome] = useState('');
   const [arquivo, setArquivo] = useState(null);
@@ -227,6 +228,11 @@ function BlocoPersonagem({
   }
 
   async function handleSalvarNovo() {
+    if (!usuarioLogado) {
+      setErro('Você precisa estar logado para cadastrar um personagem.');
+      return;
+    }
+
     if (!nome.trim()) {
       setErro('Informe o nome do personagem.');
       return;
@@ -265,7 +271,7 @@ function BlocoPersonagem({
       // Insere o personagem na tabela do banco de dados
       const { data, error: insertErr } = await supabase
         .from('personagens')
-        .insert([{ nome: nome.trim(), imagem: caminhoFinal }])
+        .insert([{ nome: nome.trim(), imagem: caminhoFinal, id_usuarios: usuarioLogado.id }])
         .select()
         .single();
 
@@ -579,6 +585,7 @@ export default function NovaBatalha() {
             onPersonagemConfirmado={setPersonagemA}
             personagemSelecionado={personagemA}
             abrirModal={() => abrirModalPara('Personagem 1')}
+            usuarioLogado={usuarioLogado}
           />
 
           <div className="vs-separador">
@@ -591,6 +598,7 @@ export default function NovaBatalha() {
             onPersonagemConfirmado={setPersonagemB}
             personagemSelecionado={personagemB}
             abrirModal={() => abrirModalPara('Personagem 2')}
+            usuarioLogado={usuarioLogado}
           />
         </div>
 
