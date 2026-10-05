@@ -123,7 +123,18 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
   }
 
   async function enviarComentario() {
-    if (!usuarioLogado) {
+    // Sempre re-lê o usuário do localStorage no momento do envio
+    // para evitar que alguém altere o ID via DevTools no estado
+    const userStr = localStorage.getItem('usuario_logado');
+    let usuarioAtual = null;
+    if (userStr) {
+      try {
+        const parsed = JSON.parse(userStr);
+        usuarioAtual = Array.isArray(parsed) ? parsed[0] : parsed;
+      } catch { usuarioAtual = null; }
+    }
+
+    if (!usuarioAtual || typeof usuarioAtual.id !== 'number') {
       onAlertaLogin('comentar');
       setErroComentario('Você precisa estar logado para comentar.');
       return;
@@ -140,7 +151,7 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
     try {
       const { data, error } = await supabase
         .from('comentarios')
-        .insert([{ texto, id_postagem: postagem.id, id_usuarios: usuarioLogado.id }])
+        .insert([{ texto, id_postagem: postagem.id, id_usuarios: usuarioAtual.id }])
         .select('id, texto, data_comentario, id_usuarios, usuarios(nome, foto)')
         .single();
 
@@ -335,13 +346,6 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
           )}
         </div>
       )}
-
-      {/* Botão Ver Batalha */}
-      <div className="batalha-card-rodape">
-        <Link to={`/batalha/${postagem.id}`} className="btn-ver-batalha">
-          Ver Batalha Completa →
-        </Link>
-      </div>
 
       {imagemModal && <ModalImagem url={imagemModal} onClose={() => setImagemModal(null)} />}
     </article>

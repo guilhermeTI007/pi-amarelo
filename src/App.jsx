@@ -1,18 +1,20 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 import NavBar from './components/NavBar';
 import TelaInicial from './paginas/TelaInicial';
 import Personagens from './paginas/Personagens';
 import NovaBatalha from './paginas/NovaBatalha';
 import Batalhas from './paginas/Batalhas';
-import BatalhaDetalhe from './paginas/BatalhaDetalhe';
 import Perfil from './paginas/Perfil';
 import Login_Cadastro from './paginas/Login_Cadastro';
+import Admin from './paginas/Admin';
 
 function Layout({ children }) {
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith('/admin');
   return (
     <>
-      <NavBar />
+      {!isAdmin && <NavBar />}
       {children}
     </>
   );
@@ -36,7 +38,6 @@ function App() {
           {/* Batalhas com votação e comentários */}
           <Route path="/batalhas" element={<Batalhas />} />
           <Route path="/batalha" element={<Batalhas />} />
-          <Route path="/batalha/:id" element={<BatalhaDetalhe />} />
 
           {/* Login e Cadastro */}
           <Route path="/login" element={<Login_Cadastro />} />
@@ -44,6 +45,9 @@ function App() {
 
           {/* Perfil com histórico */}
           <Route path="/perfil" element={<Perfil />} />
+
+          {/* Painel de Administração */}
+          <Route path="/admin" element={<Admin />} />
 
           {/* Rota padrão para páginas não encontradas */}
           <Route path="*" element={<TelaInicial />} />

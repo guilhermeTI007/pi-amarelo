@@ -5,58 +5,118 @@ import ModalImagem from "../components/ModalImagem";
 import "./Personagens.css";
 
 const BUCKET_URL = "https://rqjleobhyxxqfgwzruxa.supabase.co/storage/v1/object/public/personagens/";
-const LIMIT = 20;
+const LIMITE_VIDEO_MB = 50;
+const EXT_VIDEO = ["mp4", "webm", "mov", "m4v", "ogv", "ogg"];
 
-// Verifica se o caminho é um vídeo — ignora query-string da URL
-function isVideo(path) {
+function ehVideo(path) {
     if (!path) return false;
-    const clean = path.split('?')[0];
-    return /\.(mp4|webm|ogg|mov|avi|mkv|flv|wmv)$/i.test(clean);
+    if (path.startsWith("data:video")) return true;
+    const limpo = path.split("?")[0].split("#")[0];
+    const ext = limpo.split(".").pop().toLowerCase();
+    return EXT_VIDEO.includes(ext);
+}
+
+function VideoMudo({ src, className, style, onError }) {
+    return (
+        <video
+            src={src}
+            className={className}
+            style={style}
+            muted
+            loop
+            autoPlay
+            playsInline
+            preload="metadata"
+            controls={false}
+            disablePictureInPicture
+            controlsList="nodownload noplaybackrate noremoteplayback"
+            tabIndex={-1}
+            onContextMenu={e => e.preventDefault()}
+            onError={onError}
+        />
+    );
+}
+
+function ModalVideo({ url, onClose }) {
+    useEffect(() => {
+        function onKey(e) { if (e.key === "Escape") onClose(); }
+        document.addEventListener("keydown", onKey);
+        return () => document.removeEventListener("keydown", onKey);
+    }, [onClose]);
+
+    return (
+        <div
+            onClick={onClose}
+            style={{
+                position: "fixed", inset: 0, zIndex: 9999,
+                background: "rgba(0,0,0,0.88)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                padding: 16,
+            }}
+        >
+            <button
+                type="button"
+                onClick={onClose}
+                style={{
+                    position: "absolute", top: 16, right: 20,
+                    background: "rgba(255,255,255,0.15)", color: "#fff",
+                    border: "none", borderRadius: "50%", width: 40, height: 40,
+                    fontSize: 20, cursor: "pointer",
+                }}
+            >
+                ✕
+            </button>
+            <VideoMudo
+                src={url}
+                style={{
+                    maxWidth: "92vw", maxHeight: "88vh",
+                    borderRadius: 10, pointerEvents: "none",
+                }}
+            />
+        </div>
+    );
 }
 
 export default function Personagens() {
     const [personagens, setPersonagens] = useState([]);
     const [loading, setLoading] = useState(true);
     const [erro, setErro] = useState(null);
-    const [offset, setOffset] = useState(0);
-    const [temMais, setTemMais] = useState(true);
     const [imagemModal, setImagemModal] = useState(null);
+    const [videoModal, setVideoModal] = useState(null);
 
-    // Busca
     const [busca, setBusca] = useState("");
-    const [resultadosBusca, setResultadosBusca] = useState([]);
-    const [buscandoDB, setBuscandoDB] = useState(false);
+    const [sugestoes, setSugestoes] = useState([]);
+    const [buscandoSugestoes, setBuscandoSugestoes] = useState(false);
+    const [sugestoesVisiveis, setSugestoesVisiveis] = useState(false);
     const buscaRef = useRef(null);
     const debounceRef = useRef(null);
 
     useEffect(() => {
-        buscarPersonagens(0);
+        carregarTodosPersonagens();
     }, []);
 
-    // Busca completa no banco com debounce
     useEffect(() => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
-        if (!busca.trim()) { setResultadosBusca([]); return; }
+        if (!busca.trim()) { setSugestoes([]); setSugestoesVisiveis(false); return; }
 
         debounceRef.current = setTimeout(async () => {
-            setBuscandoDB(true);
+            setBuscandoSugestoes(true);
             try {
                 const { data } = await supabase
                     .from("personagens")
-                    .select("*")
-                    .ilike("nome", `%${busca.trim()}%`)
-                    .order("nome", { ascending: true })
-                    .limit(200);
-                setResultadosBusca(data || []);
+                    .select("id, nome, imagem")
+                    .ilike("nome", `%${busca}%`)
+                    .limit(10);
+                setSugestoes(data || []);
+                setSugestoesVisiveis(true);
             } finally {
-                setBuscandoDB(false);
+                setBuscandoSugestoes(false);
             }
-        }, 350);
+        }, 280);
 
         return () => clearTimeout(debounceRef.current);
     }, [busca]);
 
-    // Fechar sugestões ao clicar fora
     useEffect(() => {
         function handleClick(e) {
             if (buscaRef.current && !buscaRef.current.contains(e.target)) {
@@ -67,23 +127,17 @@ export default function Personagens() {
         return () => document.removeEventListener("mousedown", handleClick);
     }, []);
 
-    async function buscarPersonagens(novoOffset = 0) {
-        if (novoOffset === 0) setLoading(true);
+    async function carregarTodosPersonagens() {
+        setLoading(true);
         setErro(null);
         try {
             const { data, error } = await supabase
                 .from("personagens")
                 .select("*")
-                .order("created_at", { ascending: false })
-                .range(novoOffset, novoOffset + LIMIT - 1);
+                .order("created_at", { ascending: false });
 
             if (error) throw error;
-
-            if (novoOffset === 0) { setPersonagens(data || []); }
-            else { setPersonagens(prev => [...prev, ...(data || [])]); }
-
-            setTemMais(data && data.length === LIMIT);
-            setOffset(novoOffset);
+            setPersonagens(data || []);
         } catch (err) {
             setErro("Erro ao carregar personagens: " + err.message);
         } finally {
@@ -91,42 +145,98 @@ export default function Personagens() {
         }
     }
 
-    function carregarMais() { buscarPersonagens(offset + LIMIT); }
-
     function getImagemUrl(imagemPath) {
         if (!imagemPath) return null;
         if (imagemPath.startsWith("http") || imagemPath.startsWith("data:")) return imagemPath;
         return BUCKET_URL + imagemPath;
     }
 
-    // Quando busca está ativa, usa resultados do banco. Quando vazia, exibe os carregados.
-    const personagensMostrados = busca.trim() ? resultadosBusca : personagens;
+    function abrirMidia(imagemPath) {
+        const url = getImagemUrl(imagemPath);
+        if (!url) return;
+        if (ehVideo(imagemPath)) setVideoModal(url);
+        else setImagemModal(url);
+    }
+
+    function selecionarSugestao(sugestao) {
+        setBusca(sugestao.nome);
+        setSugestoesVisiveis(false);
+        setPersonagens(prev => {
+            if (!prev.find(p => p.id === sugestao.id)) {
+                return [sugestao, ...prev];
+            }
+            return prev;
+        });
+    }
+
+    const personagensMostrados = busca.trim()
+        ? personagens.filter(p => p.nome.toLowerCase().includes(busca.toLowerCase()))
+        : personagens;
 
     return (
         <div className="personagens-page">
             <div className="personagens-header">
-                <h1 className="personagens-titulo">
-                    <span className="estrela">⚔</span> Personagens
-                </h1>
-                <p className="personagens-sub">Explore os guerreiros do universo</p>
+                <h1 className="personagens-titulo">Personagens</h1>
+                <p className="personagens-sub">Explore todos os guerreiros cadastrados</p>
 
-                {/* Campo de busca */}
+                <p
+                    style={{
+                        background: "rgba(248, 203, 71, 0.12)",
+                        border: "1px solid rgba(248, 203, 71, 0.5)",
+                        color: "#f8cb47",
+                        borderRadius: 8,
+                        padding: "8px 14px",
+                        fontSize: 13,
+                        margin: "10px auto 14px",
+                        maxWidth: 520,
+                        textAlign: "center",
+                    }}
+                >
+                    Vídeos devem ter no máximo {LIMITE_VIDEO_MB}MB e são exibidos sem som.
+                </p>
+
                 <div className="personagens-busca-wrap" ref={buscaRef}>
                     <div className="personagens-busca-inner">
-                        <span className="personagens-busca-icon">🔍</span>
                         <input
                             className="personagens-busca"
                             type="text"
-                            placeholder="Buscar personagem pelo nome em todo o banco..."
+                            placeholder="Buscar personagem pelo nome..."
                             value={busca}
                             onChange={e => setBusca(e.target.value)}
+                            onFocus={() => sugestoes.length > 0 && setSugestoesVisiveis(true)}
                         />
                         {busca && (
-                            <button className="personagens-busca-clear" onClick={() => { setBusca(""); setResultadosBusca([]); }}>×</button>
+                            <button className="personagens-busca-clear" onClick={() => { setBusca(""); setSugestoes([]); setSugestoesVisiveis(false); }}>×</button>
                         )}
                     </div>
-                    {buscandoDB && busca.trim() && (
-                        <div className="personagens-sugestao-loading" style={{ padding: '8px 14px', fontSize: '13px', color: '#a0aec0' }}>Buscando no banco...</div>
+
+                    {sugestoesVisiveis && (
+                        <div className="personagens-sugestoes">
+                            {buscandoSugestoes ? (
+                                <div className="personagens-sugestao-loading">Buscando...</div>
+                            ) : sugestoes.length === 0 ? (
+                                <div className="personagens-sugestao-vazio">Nenhum personagem encontrado</div>
+                            ) : (
+                                sugestoes.map(s => (
+                                    <div key={s.id} className="personagens-sugestao-item" onClick={() => selecionarSugestao(s)}>
+                                        <div className="personagens-sugestao-img">
+                                            {s.imagem ? (
+                                                ehVideo(s.imagem) ? (
+                                                    <VideoMudo src={getImagemUrl(s.imagem)} />
+                                                ) : (
+                                                    <img src={getImagemUrl(s.imagem)} alt={s.nome} />
+                                                )
+                                            ) : (
+                                                <span>P</span>
+                                            )}
+                                        </div>
+                                        <span className="personagens-sugestao-nome">
+                                            {s.nome}
+                                        </span>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     )}
                 </div>
             </div>
@@ -141,7 +251,7 @@ export default function Personagens() {
             {erro && (
                 <div className="personagens-erro">
                     <p>{erro}</p>
-                    <button onClick={() => buscarPersonagens(0)} className="btn-retry">Tentar novamente</button>
+                    <button onClick={carregarTodosPersonagens} className="btn-retry">Tentar novamente</button>
                 </div>
             )}
 
@@ -149,29 +259,20 @@ export default function Personagens() {
                 <>
                     <p className="personagens-count">
                         {busca.trim()
-                            ? `${personagensMostrados.length} resultado(s) para "${busca}" (busca em todo o banco)`
-                            : `${personagens.length} personagem(s) carregado(s)`}
+                            ? `${personagensMostrados.length} resultado(s) para "${busca}"`
+                            : `Total no banco: ${personagens.length} personagem(s)`}
                     </p>
 
                     <div className="personagens-grid">
                         {personagensMostrados.map(p => (
-                            <div
-                                key={p.id}
-                                className="personagem-card"
-                                onClick={() => p.imagem && setImagemModal(getImagemUrl(p.imagem))}
-                                style={{ cursor: p.imagem ? 'pointer' : 'default' }}
-                            >
+                            <div key={p.id} className="personagem-card" onClick={() => abrirMidia(p.imagem)}>
                                 <div className="personagem-imagem-wrap">
                                     {p.imagem ? (
-                                        isVideo(p.imagem) ? (
-                                            <video
+                                        ehVideo(p.imagem) ? (
+                                            <VideoMudo
                                                 src={getImagemUrl(p.imagem)}
-                                                autoPlay
-                                                loop
-                                                muted
-                                                playsInline
                                                 className="personagem-imagem"
-                                                style={{ pointerEvents: 'none' }}
+                                                onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
                                             />
                                         ) : (
                                             <img
@@ -192,18 +293,9 @@ export default function Personagens() {
                         ))}
                     </div>
 
-                    {personagensMostrados.length === 0 && !loading && !buscandoDB && (
+                    {personagensMostrados.length === 0 && !loading && (
                         <div className="personagens-vazio">
-                            <p>{busca.trim() ? `Nenhum personagem encontrado para "${busca}".` : 'Nenhum personagem cadastrado ainda.'}</p>
-                        </div>
-                    )}
-
-                    {/* "Carregar mais" só aparece quando NÃO está buscando */}
-                    {!busca.trim() && temMais && !loading && (
-                        <div className="personagens-carregar-mais">
-                            <button className="btn-carregar-mais" onClick={carregarMais}>
-                                Carregar mais personagens
-                            </button>
+                            <p>Nenhum personagem encontrado para "{busca}".</p>
                         </div>
                     )}
                 </>
@@ -214,6 +306,7 @@ export default function Personagens() {
             </div>
 
             {imagemModal && <ModalImagem url={imagemModal} onClose={() => setImagemModal(null)} />}
+            {videoModal && <ModalVideo url={videoModal} onClose={() => setVideoModal(null)} />}
         </div>
     );
 }

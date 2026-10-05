@@ -113,7 +113,6 @@ export default function Perfil() {
     const [usuario, setUsuario] = useState(null);
     const [batalhas, setBatalhas] = useState([]);
     const [comentarios, setComentarios] = useState([]);
-    const [meusPersonagens, setMeusPersonagens] = useState([]);
     const [loading, setLoading] = useState(true);
     const [abaAtiva, setAbaAtiva] = useState("batalhas");
     const [uploadingFoto, setUploadingFoto] = useState(false);
@@ -151,13 +150,6 @@ export default function Perfil() {
                 .eq("id_usuarios", userId)
                 .order("data_comentario", { ascending: false });
             if (cErr) console.error(cErr); else setComentarios(cData || []);
-
-            const { data: pData, error: pErr } = await supabase
-                .from("personagens")
-                .select("id,nome,imagem,created_at")
-                .eq("id_usuarios", userId)
-                .order("created_at", { ascending: false });
-            if (pErr) console.error(pErr); else setMeusPersonagens(pData || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
     }
@@ -171,10 +163,6 @@ export default function Perfil() {
     async function handleTrocarFoto(e) {
         const file = e.target.files[0];
         if (!file || !usuario) return;
-        if (file.type.startsWith('video/') && file.size > 50 * 1024 * 1024) {
-            alert("Aviso: O arquivo de vídeo deve ter no máximo 50 MB.");
-            return;
-        }
         setUploadingFoto(true);
         try {
             const ext = file.name.split(".").pop() || "png";
@@ -241,19 +229,15 @@ export default function Perfil() {
                     </button>
 
                     <div className="profile-pic-container">
-                        {usuario?.foto?.match(/\.(mp4|webm|ogg|mov)$/i) ? (
-                            <video src={usuario.foto} autoPlay loop muted playsInline className="profile-pic" style={{ pointerEvents: 'none', objectFit: 'cover' }} />
-                        ) : (
-                            <img
-                                src={usuario?.foto || `https://placehold.co/120x120/FFF/000?text=${usuario?.nome ? encodeURIComponent(usuario.nome.charAt(0).toUpperCase()) : "U"}`}
-                                alt="Foto de Perfil"
-                                className="profile-pic"
-                            />
-                        )}
+                        <img
+                            src={usuario?.foto || `https://placehold.co/120x120/FFF/000?text=${usuario?.nome ? encodeURIComponent(usuario.nome.charAt(0).toUpperCase()) : "U"}`}
+                            alt="Foto de Perfil"
+                            className="profile-pic"
+                        />
                         <button type="button" className="btn-alterar-foto" onClick={() => fileInputRef.current?.click()} disabled={uploadingFoto}>
                             {uploadingFoto ? "Enviando..." : "Alterar foto"}
                         </button>
-                        <input type="file" ref={fileInputRef} style={{ display: "none" }} accept="image/*,video/*" onChange={handleTrocarFoto} />
+                        <input type="file" ref={fileInputRef} style={{ display: "none" }} accept="image/*" onChange={handleTrocarFoto} />
                     </div>
 
                     <h2 className="profile-nome">{usuario?.nome || "Guerreiro da Arena"}</h2>
@@ -295,16 +279,23 @@ export default function Perfil() {
                     <h3>INFORMAÇÕES DO GUERREIRO</h3>
                     <div className="bio-info-grid">
                         <div className="bio-info-item">
-                            <span className="bio-info-label">ID do Usuário:</span>
-                            <strong className="bio-info-val">#{usuario?.id}</strong>
-                        </div>
-                        <div className="bio-info-item">
                             <span className="bio-info-label">E-mail Cadastrado:</span>
                             <strong className="bio-info-val">{usuario?.email}</strong>
                         </div>
                         <div className="bio-info-item">
                             <span className="bio-info-label">Data de Nascimento:</span>
-                            <strong className="bio-info-val">{usuario?.data_nascimento || "Não informada"}</strong>
+                            <strong className="bio-info-val">
+                                {usuario?.data_nascimento
+                                    ? (() => {
+                                        const dn = usuario.data_nascimento;
+                                        if (/^\d{4}-\d{2}-\d{2}$/.test(dn)) {
+                                            const [y, m, d] = dn.split('-');
+                                            return `${d}/${m}/${y}`;
+                                        }
+                                        return new Date(dn).toLocaleDateString('pt-BR');
+                                    })()
+                                    : 'Não informada'}
+                            </strong>
                         </div>
                         <div className="bio-info-item">
                             <span className="bio-info-label">Membro desde:</span>
@@ -336,9 +327,6 @@ export default function Perfil() {
                     <button type="button" className={`tab-btn ${abaAtiva === "comentarios" ? "tab-btn--ativo" : ""}`} onClick={() => setAbaAtiva("comentarios")}>
                         Histórico de Comentários ({comentarios.length})
                     </button>
-                    <button type="button" className={`tab-btn ${abaAtiva === "personagens" ? "tab-btn--ativo" : ""}`} onClick={() => setAbaAtiva("personagens")}>
-                        Meus Personagens ({meusPersonagens.length})
-                    </button>
                 </div>
 
                 {abaAtiva === "batalhas" && (
@@ -364,13 +352,7 @@ export default function Perfil() {
                                             <div className="hist-batalha-versus">
                                                 <div className="hist-lutador">
                                                     <div className="hist-avatar">
-                                                        {b.personagem1?.imagem ? (
-                                                            b.personagem1.imagem.match(/\.(mp4|webm|ogg|mov)$/i) ? (
-                                                                <video src={getImagemUrl(b.personagem1.imagem)} autoPlay loop muted playsInline style={{ pointerEvents: 'none', width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                            ) : (
-                                                                <img src={getImagemUrl(b.personagem1.imagem)} alt={b.personagem1.nome} />
-                                                            )
-                                                        ) : <span>⚔</span>}
+                                                        {b.personagem1?.imagem ? <img src={getImagemUrl(b.personagem1.imagem)} alt={b.personagem1.nome} /> : <span>⚔</span>}
                                                     </div>
                                                     <span className="hist-lutador-nome">{b.personagem1?.nome || "Lutador 1"}</span>
                                                     <span className="hist-lutador-votos">{b.votos_personagem1 || 0} votos</span>
@@ -378,13 +360,7 @@ export default function Perfil() {
                                                 <span className="hist-vs">VS</span>
                                                 <div className="hist-lutador">
                                                     <div className="hist-avatar">
-                                                        {b.personagem2?.imagem ? (
-                                                            b.personagem2.imagem.match(/\.(mp4|webm|ogg|mov)$/i) ? (
-                                                                <video src={getImagemUrl(b.personagem2.imagem)} autoPlay loop muted playsInline style={{ pointerEvents: 'none', width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                            ) : (
-                                                                <img src={getImagemUrl(b.personagem2.imagem)} alt={b.personagem2.nome} />
-                                                            )
-                                                        ) : <span>⚔</span>}
+                                                        {b.personagem2?.imagem ? <img src={getImagemUrl(b.personagem2.imagem)} alt={b.personagem2.nome} /> : <span>⚔</span>}
                                                     </div>
                                                     <span className="hist-lutador-nome">{b.personagem2?.nome || "Lutador 2"}</span>
                                                     <span className="hist-lutador-votos">{b.votos_personagem2 || 0} votos</span>
@@ -421,44 +397,6 @@ export default function Perfil() {
                                                 <span className="hist-com-data">{c.data_comentario ? new Date(c.data_comentario).toLocaleDateString("pt-BR") : ""}</span>
                                             </div>
                                             <p className="hist-com-texto">"{c.texto}"</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {abaAtiva === "personagens" && (
-                    <div className="historico-conteudo">
-                        {loading ? (
-                            <div className="historico-loading"><div className="spinner-sm" /> Carregando seus personagens...</div>
-                        ) : meusPersonagens.length === 0 ? (
-                            <div className="historico-vazio">
-                                <p>Você ainda não cadastrou nenhum personagem.</p>
-                                <Link to="/nova-batalha" className="btn-criar-agora">+ Cadastrar Personagem</Link>
-                            </div>
-                        ) : (
-                            <div className="historico-grid-batalhas">
-                                {meusPersonagens.map(p => (
-                                    <div key={p.id} className="historico-batalha-card">
-                                        <div className="hist-batalha-header">
-                                            <span className="hist-badge">ID #{p.id}</span>
-                                            <span className="hist-data">{p.created_at ? new Date(p.created_at).toLocaleDateString("pt-BR") : ""}</span>
-                                        </div>
-                                        <div className="hist-batalha-versus">
-                                            <div className="hist-lutador">
-                                                <div className="hist-avatar">
-                                                    {p.imagem ? (
-                                                        p.imagem.match(/\.(mp4|webm|ogg|mov)$/i) ? (
-                                                            <video src={getImagemUrl(p.imagem)} autoPlay loop muted playsInline style={{ pointerEvents: 'none', width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                        ) : (
-                                                            <img src={getImagemUrl(p.imagem)} alt={p.nome} />
-                                                        )
-                                                    ) : <span>⚔</span>}
-                                                </div>
-                                                <span className="hist-lutador-nome">{p.nome}</span>
-                                            </div>
                                         </div>
                                     </div>
                                 ))}

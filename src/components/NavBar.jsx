@@ -36,7 +36,6 @@ export default function NavBar() {
     <header className="navbar">
       <div className="nav-left">
         <NavLink to="/" className="nav-logo" title="Início">
-          <span className="nav-logo-icon">⚔</span>
           <span className="nav-logo-text">ARENA</span>
         </NavLink>
       </div>
@@ -77,28 +76,17 @@ export default function NavBar() {
           <div className="nav-user-box">
             <button
               className="nav-link nav-link-btn nav-user-nome"
-              onClick={() => navigate('/perfil')}
+              onClick={() => navigate(usuarioLogado.is_admin ? '/admin' : '/perfil')}
               type="button"
-              title="Meu Perfil"
+              title={usuarioLogado.is_admin ? 'Painel Admin' : 'Meu Perfil'}
             >
-              {usuarioLogado.foto && /\.(mp4|webm|ogg|mov)$/i.test(usuarioLogado.foto) ? (
-                <video
-                  src={usuarioLogado.foto}
-                  className="nav-user-avatar"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  style={{ pointerEvents: 'none' }}
-                />
-              ) : (
-                <img
-                  src={usuarioLogado.foto || `https://placehold.co/120x120/FFF/000?text=${usuarioLogado.nome ? encodeURIComponent(usuarioLogado.nome.charAt(0).toUpperCase()) : "U"}`}
-                  alt="Perfil"
-                  className="nav-user-avatar"
-                />
-              )}
+              <img 
+                src={usuarioLogado.foto || `https://placehold.co/120x120/FFF/000?text=${usuarioLogado.nome ? encodeURIComponent(usuarioLogado.nome.charAt(0).toUpperCase()) : "U"}`} 
+                alt="Perfil" 
+                className="nav-user-avatar"
+              />
               {usuarioLogado.nome || 'Meu Perfil'}
+              {usuarioLogado.is_admin && <span className="nav-admin-badge">[Admin]</span>}
             </button>
             <span className="nav-sep">•</span>
             <button

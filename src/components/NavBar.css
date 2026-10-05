@@ -135,3 +135,9 @@
     display: none;
   }
 }
+
+.nav-admin-badge {
+  font-size: 13px;
+  margin-left: 2px;
+  filter: drop-shadow(0 0 4px rgba(248, 203, 71, 0.6));
+}

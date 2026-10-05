@@ -5,6 +5,10 @@ import ModalImagem from '../components/ModalImagem';
 import './NovaBatalha.css';
 
 const BUCKET_URL = 'https://rqjleobhyxxqfgwzruxa.supabase.co/storage/v1/object/public/personagens/';
+const LIMITE_PERSONAGENS = 50;
+const LIMITE_VIDEO_MB = 50;
+const LIMITE_VIDEO_BYTES = LIMITE_VIDEO_MB * 1024 * 1024;
+const EXT_VIDEO = ['mp4', 'webm', 'mov', 'm4v', 'ogv', 'ogg'];
 
 function getImagemUrl(p) {
   if (!p) return null;
@@ -12,54 +16,72 @@ function getImagemUrl(p) {
   return BUCKET_URL + p;
 }
 
-// ── Modal de Seleção de Personagem com Paginação Server-Side ──
-const ITENS_POR_PAGINA = 50;
+function ehVideo(p) {
+  if (!p) return false;
+  if (p.startsWith('data:video')) return true;
+  const limpo = p.split('?')[0].split('#')[0];
+  const ext = limpo.split('.').pop().toLowerCase();
+  return EXT_VIDEO.includes(ext);
+}
 
+// Vídeo mudo, em loop, sem controles (não dá pra mexer no tempo)
+function VideoMudo({ src, className, style, onError }) {
+  return (
+    <video
+      src={src}
+      className={className}
+      style={style}
+      muted
+      loop
+      autoPlay
+      playsInline
+      preload="metadata"
+      controls={false}
+      disablePictureInPicture
+      controlsList="nodownload noplaybackrate noremoteplayback"
+      tabIndex={-1}
+      onContextMenu={(e) => e.preventDefault()}
+      onError={onError}
+    />
+  );
+}
+
+const estiloAvisoVideo = {
+  background: 'rgba(248, 203, 71, 0.12)',
+  border: '1px solid rgba(248, 203, 71, 0.5)',
+  color: '#f8cb47',
+  borderRadius: 8,
+  padding: '10px 14px',
+  fontSize: 13,
+  margin: '0 0 14px 0',
+  textAlign: 'center',
+};
+
+// ── Modal de Seleção de Personagem com Paginação (50 por página) ──
 function ModalEscolherPersonagem({ aberto, onClose, onSelect, ladoNome }) {
   const [personagens, setPersonagens] = useState([]);
   const [loading, setLoading] = useState(false);
   const [busca, setBusca] = useState('');
-  const [buscaInput, setBuscaInput] = useState('');
   const [pagina, setPagina] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const debounceRef = useRef(null);
+  const ITENS_POR_PAGINA = 50;
 
-  // Carrega ao abrir ou ao mudar de página / busca
   useEffect(() => {
     if (aberto) {
-      carregarPersonagens(pagina, busca);
-    }
-  }, [aberto, pagina, busca]);
-
-  // Reseta ao abrir o modal
-  useEffect(() => {
-    if (aberto) {
+      carregarPersonagens();
       setPagina(1);
       setBusca('');
-      setBuscaInput('');
     }
   }, [aberto]);
 
-  async function carregarPersonagens(pag, filtro) {
+  async function carregarPersonagens() {
     setLoading(true);
     try {
-      const inicio = (pag - 1) * ITENS_POR_PAGINA;
-      const fim = inicio + ITENS_POR_PAGINA - 1;
-
-      let query = supabase
+      const { data, error } = await supabase
         .from('personagens')
-        .select('*', { count: 'exact' })
-        .order('nome', { ascending: true })
-        .range(inicio, fim);
-
-      if (filtro && filtro.trim()) {
-        query = query.ilike('nome', `%${filtro.trim()}%`);
-      }
-
-      const { data, error, count } = await query;
+        .select('*')
+        .order('nome', { ascending: true });
       if (error) throw error;
       setPersonagens(data || []);
-      setTotalCount(count ?? 0);
     } catch (err) {
       console.error('Erro ao buscar personagens:', err);
     } finally {
@@ -67,19 +89,15 @@ function ModalEscolherPersonagem({ aberto, onClose, onSelect, ladoNome }) {
     }
   }
 
-  function handleBuscaChange(e) {
-    const val = e.target.value;
-    setBuscaInput(val);
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setBusca(val);
-      setPagina(1);
-    }, 400);
-  }
-
   if (!aberto) return null;
 
-  const totalPaginas = Math.max(1, Math.ceil(totalCount / ITENS_POR_PAGINA));
+  const filtrados = personagens.filter((p) =>
+    p.nome?.toLowerCase().includes(busca.toLowerCase().trim())
+  );
+
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / ITENS_POR_PAGINA));
+  const inicio = (pagina - 1) * ITENS_POR_PAGINA;
+  const personagensPagina = filtrados.slice(inicio, inicio + ITENS_POR_PAGINA);
 
   return (
     <div className="modal-personagens-overlay" onClick={onClose}>
@@ -93,8 +111,11 @@ function ModalEscolherPersonagem({ aberto, onClose, onSelect, ladoNome }) {
           <input
             type="text"
             placeholder="Pesquisar personagem por nome..."
-            value={buscaInput}
-            onChange={handleBuscaChange}
+            value={busca}
+            onChange={(e) => {
+              setBusca(e.target.value);
+              setPagina(1);
+            }}
             autoFocus
           />
         </div>
@@ -105,49 +126,48 @@ function ModalEscolherPersonagem({ aberto, onClose, onSelect, ladoNome }) {
               <div className="spinner-sm" />
               <p>Carregando personagens...</p>
             </div>
-          ) : personagens.length === 0 ? (
+          ) : personagensPagina.length === 0 ? (
             <div className="modal-vazio">
               <p>Nenhum personagem encontrado no banco.</p>
               <small>Você pode fechar e cadastrar um novo lutador.</small>
             </div>
           ) : (
-            personagens.map((p) => (
-              <div
-                key={p.id}
-                className="modal-personagem-item"
-                onClick={() => {
-                  onSelect(p);
-                  onClose();
-                }}
-              >
-                <div className="modal-personagem-avatar">
-                  {p.imagem ? (
-                    p.imagem.match(/\.(mp4|webm|ogg|mov)$/i) ? (
-                      <video src={getImagemUrl(p.imagem)} autoPlay loop muted playsInline style={{ pointerEvents: 'none', width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      <img
-                        src={getImagemUrl(p.imagem)}
-                        alt={p.nome}
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                    )
-                  ) : null}
-                  <span className="modal-avatar-fallback" style={{ display: p.imagem ? 'none' : 'flex' }}>
-                    VS
-                  </span>
+            personagensPagina.map((p) => {
+              const onErroMidia = (e) => {
+                e.target.style.display = 'none';
+                if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+              };
+              return (
+                <div
+                  key={p.id}
+                  className="modal-personagem-item"
+                  onClick={() => {
+                    onSelect(p);
+                    onClose();
+                  }}
+                >
+                  <div className="modal-personagem-avatar">
+                    {p.imagem ? (
+                      ehVideo(p.imagem) ? (
+                        <VideoMudo src={getImagemUrl(p.imagem)} onError={onErroMidia} />
+                      ) : (
+                        <img src={getImagemUrl(p.imagem)} alt={p.nome} onError={onErroMidia} />
+                      )
+                    ) : null}
+                    <span className="modal-avatar-fallback" style={{ display: p.imagem ? 'none' : 'flex' }}>
+                      VS
+                    </span>
+                  </div>
+                  <div className="modal-personagem-info">
+                    <strong className="modal-personagem-nome">{p.nome}</strong>
+                    <span className="modal-personagem-id">ID: #{p.id}</span>
+                  </div>
+                  <button type="button" className="btn-modal-escolher">
+                    Selecionar
+                  </button>
                 </div>
-                <div className="modal-personagem-info">
-                  <strong className="modal-personagem-nome">{p.nome}</strong>
-                  <span className="modal-personagem-id">ID: #{p.id}</span>
-                </div>
-                <button type="button" className="btn-modal-escolher">
-                  Selecionar
-                </button>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
@@ -156,18 +176,18 @@ function ModalEscolherPersonagem({ aberto, onClose, onSelect, ladoNome }) {
           <button
             type="button"
             className="btn-pag"
-            disabled={pagina <= 1 || loading}
+            disabled={pagina <= 1}
             onClick={() => setPagina((p) => Math.max(1, p - 1))}
           >
             Anterior
           </button>
           <span className="info-pag">
-            Página <strong>{pagina}</strong> de <strong>{totalPaginas}</strong> ({totalCount} encontrados)
+            Página <strong>{pagina}</strong> de <strong>{totalPaginas}</strong> ({filtrados.length} encontrados)
           </span>
           <button
             type="button"
             className="btn-pag"
-            disabled={pagina >= totalPaginas || loading}
+            disabled={pagina >= totalPaginas}
             onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
           >
             Próxima
@@ -186,10 +206,13 @@ function BlocoPersonagem({
   personagemSelecionado,
   abrirModal,
   usuarioLogado,
+  totalCriados,
+  onPersonagemCriado,
 }) {
   const [nome, setNome] = useState('');
   const [arquivo, setArquivo] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [previewVideo, setPreviewVideo] = useState(false);
 
   // Estados: null=aguardando | 'verificando' | 'encontrado' | 'novo' | 'salvo'
   const [estado, setEstado] = useState(null);
@@ -200,11 +223,14 @@ function BlocoPersonagem({
   const inputArquivoRef = useRef();
   const debounceRef = useRef();
 
+  const limiteAtingido = totalCriados >= LIMITE_PERSONAGENS;
+
   // Se veio selecionado do modal exterior
   useEffect(() => {
     if (personagemSelecionado) {
       setNome(personagemSelecionado.nome);
       setPreview(getImagemUrl(personagemSelecionado.imagem));
+      setPreviewVideo(ehVideo(personagemSelecionado.imagem));
       setEstado('encontrado');
       setErro('');
     }
@@ -218,6 +244,7 @@ function BlocoPersonagem({
       setEstado(null);
       setArquivo(null);
       setPreview(null);
+      setPreviewVideo(false);
       setErro('');
       onPersonagemConfirmado(null);
       return;
@@ -239,10 +266,12 @@ function BlocoPersonagem({
     if (data && data.length > 0) {
       setEstado('encontrado');
       setPreview(getImagemUrl(data[0].imagem));
+      setPreviewVideo(ehVideo(data[0].imagem));
       onPersonagemConfirmado(data[0]);
     } else {
       setEstado('novo');
       setPreview(null);
+      setPreviewVideo(false);
       onPersonagemConfirmado(null);
     }
   }
@@ -250,20 +279,26 @@ function BlocoPersonagem({
   function handleArquivo(e) {
     const f = e.target.files[0];
     if (!f) return;
-    if (f.type.startsWith('video/')) {
-        if (f.size > 50 * 1024 * 1024) {
-            alert("Aviso: O arquivo de vídeo deve ter no máximo 50 MB.");
-            return;
-        }
+
+    const ehArquivoVideo = f.type.startsWith('video/');
+
+    if (ehArquivoVideo && f.size > LIMITE_VIDEO_BYTES) {
+      setErro(
+        `Vídeo muito grande (${(f.size / 1024 / 1024).toFixed(1)}MB). O máximo permitido é ${LIMITE_VIDEO_MB}MB.`
+      );
+      e.target.value = '';
+      return;
     }
+
     setArquivo(f);
     setPreview(URL.createObjectURL(f));
+    setPreviewVideo(ehArquivoVideo);
     setErro('');
   }
 
   async function handleSalvarNovo() {
     if (!usuarioLogado) {
-      setErro('Você precisa estar logado para cadastrar um personagem.');
+      setErro('Você precisa estar logado para cadastrar personagens.');
       return;
     }
 
@@ -273,7 +308,12 @@ function BlocoPersonagem({
     }
 
     if (!arquivo) {
-      setErro('Por favor, selecione uma foto para o personagem.');
+      setErro('Por favor, selecione uma foto ou vídeo para o personagem.');
+      return;
+    }
+
+    if (arquivo.type.startsWith('video/') && arquivo.size > LIMITE_VIDEO_BYTES) {
+      setErro(`O vídeo deve ter no máximo ${LIMITE_VIDEO_MB}MB.`);
       return;
     }
 
@@ -281,9 +321,22 @@ function BlocoPersonagem({
     setErro('');
 
     try {
+      // Confere limite no banco (dado fresco, não só o do estado)
+      const { count, error: countErr } = await supabase
+        .from('personagens')
+        .select('id', { count: 'exact', head: true })
+        .eq('id_usuario', usuarioLogado.id);
+
+      if (countErr) throw countErr;
+
+      if ((count ?? 0) >= LIMITE_PERSONAGENS) {
+        onPersonagemCriado?.();
+        throw new Error(`Limite de ${LIMITE_PERSONAGENS} personagens por usuário atingido.`);
+      }
+
       let caminhoFinal = '';
 
-      // Envia a foto para o Supabase Storage no bucket 'personagens' dentro da pasta 'outros/'
+      // Envia a mídia para o Supabase Storage no bucket 'personagens' dentro da pasta 'outros/'
       const ext = arquivo.name.split('.').pop() || 'png';
       const nomeArquivoLimpo = nome.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
       const caminhoStorage = `outros/${Date.now()}_${nomeArquivoLimpo}.${ext}`;
@@ -305,7 +358,7 @@ function BlocoPersonagem({
       // Insere o personagem na tabela do banco de dados
       const { data, error: insertErr } = await supabase
         .from('personagens')
-        .insert([{ nome: nome.trim(), imagem: caminhoFinal, id_usuarios: usuarioLogado.id }])
+        .insert([{ nome: nome.trim(), imagem: caminhoFinal, id_usuario: usuarioLogado.id }])
         .select()
         .single();
 
@@ -313,7 +366,9 @@ function BlocoPersonagem({
 
       setEstado('salvo');
       setPreview(getImagemUrl(data.imagem));
+      setPreviewVideo(ehVideo(data.imagem));
       onPersonagemConfirmado(data);
+      onPersonagemCriado?.();
     } catch (err) {
       setErro('Erro ao salvar personagem: ' + err.message);
     } finally {
@@ -325,6 +380,7 @@ function BlocoPersonagem({
     setNome('');
     setArquivo(null);
     setPreview(null);
+    setPreviewVideo(false);
     setEstado(null);
     setErro('');
     onPersonagemConfirmado(null);
@@ -334,8 +390,8 @@ function BlocoPersonagem({
     estado === 'encontrado' || estado === 'salvo'
       ? 'var(--accent-green, #2ecc71)'
       : estado === 'novo'
-      ? 'var(--accent-red, #e74c3c)'
-      : 'transparent';
+        ? 'var(--accent-red, #e74c3c)'
+        : 'transparent';
 
   return (
     <div className="bloco-personagem" style={{ borderColor: corBorda }}>
@@ -349,11 +405,11 @@ function BlocoPersonagem({
         )}
       </div>
 
-      {/* Preview da imagem */}
+      {/* Preview da mídia (vídeo não abre modal) */}
       <div className="bloco-preview">
         {preview ? (
-          (arquivo?.type?.startsWith('video/') || (typeof preview === 'string' && preview.match(/\.(mp4|webm|ogg|mov)$/i))) ? (
-            <video src={preview} className="bloco-img" autoPlay loop muted playsInline style={{ pointerEvents: 'none' }} />
+          previewVideo ? (
+            <VideoMudo src={preview} className="bloco-img" />
           ) : (
             <img src={preview} alt="preview" className="bloco-img" onClick={() => setImagemModal(preview)} />
           )
@@ -362,44 +418,7 @@ function BlocoPersonagem({
         )}
       </div>
 
-      {/* 1ª Opção — Campo de nome */}
-      <div className="bloco-dica">
-        <span className="bloco-dica-titulo">1ª Opção — Digite o nome</span>
-        <span className="bloco-dica-desc">Pesquisamos automaticamente se o personagem já existe no banco.</span>
-      </div>
-      <div className="bloco-campo">
-        <input
-          type="text"
-          className="campo-input"
-          placeholder="Ex: Goku, Naruto, Batman..."
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          disabled={estado === 'salvo'}
-        />
-        <div className="bloco-status">
-          {estado === 'verificando' && <span className="status-verificando">Verificando no banco...</span>}
-          {estado === 'encontrado' && (
-            <span className="status-ok">Personagem encontrado no banco</span>
-          )}
-          {estado === 'novo' && (
-            <span className="status-novo">Não cadastrado. Envie uma foto:</span>
-          )}
-          {estado === 'salvo' && (
-            <span className="status-salvo">Personagem cadastrado com sucesso!</span>
-          )}
-        </div>
-      </div>
-
-      {/* 2º — Ou escolher da lista */}
-      <div className="bloco-separador">
-        <span className="bloco-separador-linha" />
-        <span className="bloco-separador-texto">ou</span>
-        <span className="bloco-separador-linha" />
-      </div>
-      <div className="bloco-dica" style={{ marginBottom: '4px' }}>
-        <span className="bloco-dica-titulo">2ª Opção — Escolha da lista</span>
-        <span className="bloco-dica-desc">Pesquise e selecione um personagem já cadastrado.</span>
-      </div>
+      {/* Botão de Escolher do Banco */}
       <div className="bloco-acoes-topo">
         <button
           type="button"
@@ -410,20 +429,40 @@ function BlocoPersonagem({
         </button>
       </div>
 
+      {/* Campo de nome */}
+      <div className="bloco-campo">
+        <input
+          type="text"
+          className="campo-input"
+          placeholder="Ou digite o nome do personagem..."
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+          disabled={estado === 'salvo'}
+        />
+        <div className="bloco-status">
+          {estado === 'verificando' && <span className="status-verificando">Verificando no banco...</span>}
+          {estado === 'encontrado' && (
+            <span className="status-ok">Personagem encontrado no banco</span>
+          )}
+          {estado === 'novo' && (
+            <span className="status-novo">Não cadastrado. Envie uma foto ou vídeo:</span>
+          )}
+          {estado === 'salvo' && (
+            <span className="status-salvo">Personagem cadastrado com sucesso!</span>
+          )}
+        </div>
+      </div>
+
       {/* Upload quando o personagem é novo */}
       {estado === 'novo' && (
         <div className="bloco-upload">
-          <div className="bloco-dica">
-            <span className="bloco-dica-titulo">Etapa 2 — Adicione uma foto ou vídeo</span>
-            <span className="bloco-dica-desc">Escolha uma imagem ou vídeo de até 50 MB para representar esse personagem.</span>
-          </div>
           <div className="upload-controles-foto">
             <button
               type="button"
               className="btn-selecionar-img"
               onClick={() => inputArquivoRef.current?.click()}
             >
-              {arquivo ? `Arquivo selecionado: ${arquivo.name}` : 'Selecionar foto ou vídeo (máx. 50 MB)'}
+              {arquivo ? `Arquivo selecionado: ${arquivo.name}` : 'Selecionar foto ou vídeo do computador'}
             </button>
             <input
               ref={inputArquivoRef}
@@ -434,13 +473,23 @@ function BlocoPersonagem({
             />
           </div>
 
+          <p style={{ fontSize: 12, opacity: 0.8, margin: '6px 0' }}>
+            Vídeos: máximo de {LIMITE_VIDEO_MB}MB. Serão exibidos sem som.
+          </p>
+
+          {limiteAtingido && (
+            <p className="bloco-erro">
+              Você atingiu o limite de {LIMITE_PERSONAGENS} personagens cadastrados.
+            </p>
+          )}
+
           {erro && <p className="bloco-erro">{erro}</p>}
 
           <button
             type="button"
             className="btn-salvar-personagem"
             onClick={handleSalvarNovo}
-            disabled={salvando}
+            disabled={salvando || limiteAtingido}
           >
             {salvando ? 'Salvando no Storage e Banco...' : 'Salvar Personagem'}
           </button>
@@ -472,6 +521,7 @@ export default function NovaBatalha() {
   const [personagemA, setPersonagemA] = useState(null);
   const [personagemB, setPersonagemB] = useState(null);
   const [usuarioLogado, setUsuarioLogado] = useState(null);
+  const [totalCriados, setTotalCriados] = useState(0);
   const [criando, setCriando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
   const [erro, setErro] = useState('');
@@ -496,6 +546,23 @@ export default function NovaBatalha() {
     }
     verificarLogin();
   }, []);
+
+  // Conta personagens criados pelo usuário
+  useEffect(() => {
+    carregarTotalCriados();
+  }, [usuarioLogado]);
+
+  async function carregarTotalCriados() {
+    if (!usuarioLogado) {
+      setTotalCriados(0);
+      return;
+    }
+    const { count, error } = await supabase
+      .from('personagens')
+      .select('id', { count: 'exact', head: true })
+      .eq('id_usuario', usuarioLogado.id);
+    if (!error) setTotalCriados(count ?? 0);
+  }
 
   function abrirModalPara(lado) {
     setLadoAlvo(lado);
@@ -615,6 +682,17 @@ export default function NovaBatalha() {
           </p>
         </div>
 
+        {/* Aviso de vídeo e limite de personagens */}
+        <div style={estiloAvisoVideo}>
+          Vídeos devem ter no máximo {LIMITE_VIDEO_MB}MB e serão exibidos sem som.
+          {usuarioLogado && (
+            <>
+              {' '}Personagens cadastrados por você: <strong>{totalCriados}/{LIMITE_PERSONAGENS}</strong>.
+              {totalCriados >= LIMITE_PERSONAGENS && ' Limite atingido, não é possível cadastrar novos.'}
+            </>
+          )}
+        </div>
+
         {/* Alerta Destacado caso a pessoa esteja deslogada */}
         {!usuarioLogado && (
           <div className="aviso-deslogado-box">
@@ -641,6 +719,8 @@ export default function NovaBatalha() {
             personagemSelecionado={personagemA}
             abrirModal={() => abrirModalPara('Personagem 1')}
             usuarioLogado={usuarioLogado}
+            totalCriados={totalCriados}
+            onPersonagemCriado={carregarTotalCriados}
           />
 
           <div className="vs-separador">
@@ -654,6 +734,8 @@ export default function NovaBatalha() {
             personagemSelecionado={personagemB}
             abrirModal={() => abrirModalPara('Personagem 2')}
             usuarioLogado={usuarioLogado}
+            totalCriados={totalCriados}
+            onPersonagemCriado={carregarTotalCriados}
           />
         </div>
 
