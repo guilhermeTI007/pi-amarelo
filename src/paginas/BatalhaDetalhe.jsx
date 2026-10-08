@@ -134,22 +134,54 @@ export default function BatalhaDetalhe() {
   }
 
   async function enviarComentario() {
-    if (!usuarioLogado) { setErroComentario('Faca login para comentar.'); return; }
+    if (!usuarioLogado || !usuarioLogado.id) { setErroComentario('Faça login para comentar.'); return; }
     const texto = novoTexto.trim();
-    if (!texto) { setErroComentario('Digite um comentario.'); return; }
+    if (!texto) { setErroComentario('Digite um comentário.'); return; }
     setErroComentario('');
     setEnviando(true);
     try {
-      const { data, error } = await supabase
+      const payloadBase = { texto, id_postagem: postagem.id };
+      let payload = { ...payloadBase, id_usuarios: usuarioLogado.id };
+      console.log("vai inserir comentario em detalhe:", payload);
+
+      let { data, error } = await supabase
         .from('comentarios')
-        .insert([{ texto, id_postagem: postagem.id, id_usuarios: usuarioLogado.id }])
-        .select('id, texto, data_comentario, id_usuarios, usuarios(nome, foto, plano)')
+        .insert([payload])
+        .select('*')
         .single();
-      if (error) throw error;
-      setComentarios(prev => [...prev, data]);
+
+      if (error && error.message && (error.message.includes('id_usuarios') || error.code === 'PGRST204')) {
+        console.warn("Tentando com coluna alternativa 'id_usuario' para comentarios...");
+        payload = { ...payloadBase, id_usuario: usuarioLogado.id };
+        console.log("vai inserir comentario em detalhe (tentativa 2):", payload);
+        const res2 = await supabase
+          .from('comentarios')
+          .insert([payload])
+          .select('*')
+          .single();
+        data = res2.data;
+        error = res2.error;
+      }
+
+      if (error) {
+        console.error("Erro detalhado ao inserir comentario em detalhe:", error);
+        throw error;
+      }
+
+      const comentarioMontado = {
+        ...data,
+        usuarios: {
+          nome: usuarioLogado.nome,
+          foto: usuarioLogado.foto,
+          plano: usuarioLogado.plano,
+        },
+      };
+
+      setComentarios(prev => [...prev, comentarioMontado]);
       setNovoTexto('');
     } catch (err) {
-      setErroComentario('Erro ao enviar: ' + err.message);
+      console.error("Erro ao enviar comentario:", err);
+      setErroComentario('Erro ao enviar: ' + (err.message || 'Verifique o console.'));
     } finally {
       setEnviando(false);
     }
@@ -167,11 +199,12 @@ export default function BatalhaDetalhe() {
   if (erro || !postagem) {
     return (
       <div className="bdet-erro-page">
-        <p>{erro || 'Batalha nao encontrada.'}</p>
-        <Link to="/batalhas" className="bdet-btn-voltar">larr; Voltar para a Arena</Link>
+        <p>{erro || 'Batalha não encontrada.'}</p>
+        <Link to="/batalhas" className="bdet-btn-voltar">&larr; Voltar para a Arena</Link>
       </div>
     );
   }
+
 
   const p1 = postagem.personagem1;
   const p2 = postagem.personagem2;
@@ -288,10 +321,11 @@ export default function BatalhaDetalhe() {
 
       <div className="bdet-comentarios-section">
         <div className="bdet-comentarios-header">
-          <h3 className="bdet-comentarios-titulo">&#128172; Discussao e Comentarios</h3>
-          <span className="bdet-comentarios-count">{comentarios.length} comentario(s)</span>
+          <h3 className="bdet-comentarios-titulo">&#128172; Discussão e Comentários</h3>
+          <span className="bdet-comentarios-count">{comentarios.length} comentário(s)</span>
         </div>
 
+        {/* Formulário de comentário */}
         <div className="bdet-form-comentario">
           {usuarioLogado && (
             <div className="bdet-form-avatar">
@@ -309,7 +343,7 @@ export default function BatalhaDetalhe() {
           <div className="bdet-form-input-wrap">
             <textarea
               className="bdet-comentario-input"
-              placeholder={usuarioLogado ? 'Escreva seu argumento sobre quem venceria essa batalha...' : 'Faca login para entrar na discussao...'}
+              placeholder={usuarioLogado ? 'Escreva seu argumento sobre quem venceria essa batalha...' : 'Faça login para entrar na discussão...'}
               value={novoTexto}
               onChange={e => setNovoTexto(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarComentario(); } }}
@@ -326,41 +360,104 @@ export default function BatalhaDetalhe() {
           </div>
         </div>
 
-        <div className="bdet-lista-comentarios">
-          {loadingComentarios ? (
-            <div className="bdet-comentarios-loading"><div className="bdet-spinner-sm" /> Carregando comentarios...</div>
-          ) : comentarios.length === 0 ? (
-            <div className="bdet-comentarios-vazio">
-              <span>&#127967;</span>
-              <p>Nenhum comentario ainda. Seja o primeiro a opinar!</p>
-            </div>
-          ) : (
-            comentarios.map(c => (
-              <div key={c.id} className="bdet-comentario-item">
-                <div className="bdet-comentario-avatar">
-                  {c.usuarios?.foto ? (
-                    /\.(mp4|webm|ogg|mov)$/i.test(c.usuarios.foto) ? (
-                      <video src={c.usuarios.foto} autoPlay loop muted playsInline style={{ pointerEvents: 'none', width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      <img src={c.usuarios.foto} alt={c.usuarios.nome} />
-                    )
-                  ) : (
-                    <span>{c.usuarios?.nome?.charAt(0)?.toUpperCase() || '?'}</span>
-                  )}
-                </div>
-                <div className="bdet-comentario-corpo">
-                  <div className="bdet-comentario-meta">
-                    <span className="bdet-comentario-autor">{c.usuarios?.nome || 'Guerreiro'}</span>
-                    {c.usuarios?.plano === 2 && <span className="bdet-badge-vip">&#128081; VIP</span>}
-                    {c.usuarios?.plano === 1 && <span className="bdet-badge-pro">&#11088; Pro</span>}
-                    <span className="bdet-comentario-data">{c.data_comentario ? new Date(c.data_comentario).toLocaleDateString('pt-BR') : ''}</span>
-                  </div>
-                  <p className="bdet-comentario-texto">{c.texto}</p>
-                </div>
+        {/* Dois lados de comentários: P1 esquerda, P2 direita */}
+        {loadingComentarios ? (
+          <div className="bdet-comentarios-loading"><div className="bdet-spinner-sm" /> Carregando comentários...</div>
+        ) : comentarios.length === 0 ? (
+          <div className="bdet-comentarios-vazio">
+            <span>&#127967;</span>
+            <p>Nenhum comentário ainda. Seja o primeiro a opinar!</p>
+          </div>
+        ) : (
+          <div className="bdet-comentarios-dois-lados">
+            {/* Coluna do Personagem 1 */}
+            <div className="bdet-comentarios-lado bdet-comentarios-lado--p1">
+              <div className="bdet-comentarios-lado-header">
+                <span className="bdet-comentarios-lado-nome">{p1?.nome || 'Personagem 1'}</span>
+                <span className="bdet-comentarios-lado-badge bdet-comentarios-lado-badge--p1">
+                  {comentarios.filter(c => c.lado === 'p1').length} comentário(s)
+                </span>
               </div>
-            ))
-          )}
-        </div>
+              <div className="bdet-lista-comentarios">
+                {comentarios.filter((_, i) => i % 2 === 0).length === 0 ? (
+                  <p className="bdet-lado-vazio">Nenhum comentário ainda</p>
+                ) : (
+                  comentarios.filter((_, i) => i % 2 === 0).map(c => (
+                    <div key={c.id} className="bdet-comentario-item">
+                      <div className="bdet-comentario-avatar">
+                        {c.usuarios?.foto ? (
+                          /\.(mp4|webm|ogg|mov)$/i.test(c.usuarios.foto) ? (
+                            <video src={c.usuarios.foto} autoPlay loop muted playsInline style={{ pointerEvents: 'none', width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <img src={c.usuarios.foto} alt={c.usuarios.nome} />
+                          )
+                        ) : (
+                          <span>{c.usuarios?.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                        )}
+                      </div>
+                      <div className="bdet-comentario-corpo">
+                        <div className="bdet-comentario-meta">
+                          <span className="bdet-comentario-autor">{c.usuarios?.nome || 'Guerreiro'}</span>
+                          {c.usuarios?.plano === 2 && <span className="bdet-badge-vip">&#128081; VIP</span>}
+                          {c.usuarios?.plano === 1 && <span className="bdet-badge-pro">&#11088; Pro</span>}
+                          <span className="bdet-comentario-data">{c.data_comentario ? new Date(c.data_comentario).toLocaleDateString('pt-BR') : ''}</span>
+                        </div>
+                        <p className="bdet-comentario-texto">{c.texto}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Divisor central */}
+            <div className="bdet-comentarios-divisor">
+              <div className="bdet-comentarios-divisor-linha" />
+              <span className="bdet-comentarios-divisor-vs">VS</span>
+              <div className="bdet-comentarios-divisor-linha" />
+            </div>
+
+            {/* Coluna do Personagem 2 */}
+            <div className="bdet-comentarios-lado bdet-comentarios-lado--p2">
+              <div className="bdet-comentarios-lado-header">
+                <span className="bdet-comentarios-lado-nome">{p2?.nome || 'Personagem 2'}</span>
+                <span className="bdet-comentarios-lado-badge bdet-comentarios-lado-badge--p2">
+                  {comentarios.filter((_, i) => i % 2 !== 0).length} comentário(s)
+                </span>
+              </div>
+              <div className="bdet-lista-comentarios">
+                {comentarios.filter((_, i) => i % 2 !== 0).length === 0 ? (
+                  <p className="bdet-lado-vazio">Nenhum comentário ainda</p>
+                ) : (
+                  comentarios.filter((_, i) => i % 2 !== 0).map(c => (
+                    <div key={c.id} className="bdet-comentario-item">
+                      <div className="bdet-comentario-avatar">
+                        {c.usuarios?.foto ? (
+                          /\.(mp4|webm|ogg|mov)$/i.test(c.usuarios.foto) ? (
+                            <video src={c.usuarios.foto} autoPlay loop muted playsInline style={{ pointerEvents: 'none', width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <img src={c.usuarios.foto} alt={c.usuarios.nome} />
+                          )
+                        ) : (
+                          <span>{c.usuarios?.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                        )}
+                      </div>
+                      <div className="bdet-comentario-corpo">
+                        <div className="bdet-comentario-meta">
+                          <span className="bdet-comentario-autor">{c.usuarios?.nome || 'Guerreiro'}</span>
+                          {c.usuarios?.plano === 2 && <span className="bdet-badge-vip">&#128081; VIP</span>}
+                          {c.usuarios?.plano === 1 && <span className="bdet-badge-pro">&#11088; Pro</span>}
+                          <span className="bdet-comentario-data">{c.data_comentario ? new Date(c.data_comentario).toLocaleDateString('pt-BR') : ''}</span>
+                        </div>
+                        <p className="bdet-comentario-texto">{c.texto}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {imagemModal && <ModalImagem url={imagemModal} onClose={() => setImagemModal(null)} />}

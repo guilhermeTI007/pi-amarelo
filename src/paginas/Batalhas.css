@@ -733,3 +733,33 @@
     border-color: var(--accent-yellow, #f8cb47);
     transform: translateX(3px);
 }
+
+/* ── Rodapé do cartão de batalha (botão de detalhes) ──────────────── */
+.batalha-card-rodape {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 0 4px;
+}
+
+.btn-ver-detalhe-batalha {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(248, 203, 71, 0.15), rgba(231, 76, 60, 0.1));
+  border: 1px solid rgba(248, 203, 71, 0.5);
+  color: var(--accent-yellow, #f8cb47);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 9px 20px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.btn-ver-detalhe-batalha:hover {
+  background: linear-gradient(135deg, rgba(248, 203, 71, 0.28), rgba(231, 76, 60, 0.18));
+  border-color: var(--accent-yellow, #f8cb47);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(248, 203, 71, 0.25);
+}

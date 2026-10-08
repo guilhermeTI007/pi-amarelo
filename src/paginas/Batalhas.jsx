@@ -149,18 +149,49 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
     setErroComentario('');
     setEnviando(true);
     try {
-      const { data, error } = await supabase
+      const payloadBase = { texto, id_postagem: postagem.id };
+      let payload = { ...payloadBase, id_usuarios: usuarioAtual.id };
+      console.log("vai inserir comentario:", payload);
+
+      let { data, error } = await supabase
         .from('comentarios')
-        .insert([{ texto, id_postagem: postagem.id, id_usuarios: usuarioAtual.id }])
-        .select('id, texto, data_comentario, id_usuarios, usuarios(nome, foto)')
+        .insert([payload])
+        .select('*')
         .single();
 
-      if (error) throw error;
-      setComentarios((prev) => [...prev, data]);
+      if (error && error.message && (error.message.includes('id_usuarios') || error.code === 'PGRST204')) {
+        console.warn("Tentando com coluna alternativa 'id_usuario' para comentarios...");
+        payload = { ...payloadBase, id_usuario: usuarioAtual.id };
+        console.log("vai inserir comentario (tentativa 2):", payload);
+        const res2 = await supabase
+          .from('comentarios')
+          .insert([payload])
+          .select('*')
+          .single();
+        data = res2.data;
+        error = res2.error;
+      }
+
+      if (error) {
+        console.error("Erro detalhado ao inserir comentario:", error);
+        throw error;
+      }
+
+      const comentarioMontado = {
+        ...data,
+        usuarios: {
+          nome: usuarioAtual.nome,
+          foto: usuarioAtual.foto,
+          plano: usuarioAtual.plano,
+        },
+      };
+
+      setComentarios((prev) => [...prev, comentarioMontado]);
       setTotalComentarios((n) => n + 1);
       setNovoTexto('');
     } catch (err) {
-      setErroComentario('Erro ao enviar: ' + err.message);
+      console.error("Erro ao enviar comentario:", err);
+      setErroComentario('Erro ao enviar: ' + (err.message || 'Verifique o console.'));
     } finally {
       setEnviando(false);
     }
@@ -271,6 +302,13 @@ function CartaoBatalha({ postagem, usuarioLogado, onAlertaLogin }) {
       {erroVoto && (
         <div className="batalha-erro-voto">{erroVoto}</div>
       )}
+
+      {/* Botão Ver Detalhes */}
+      <div className="batalha-card-rodape">
+        <Link to={`/batalha/${postagem.id}`} className="btn-ver-detalhe-batalha">
+          ⚔ Ver Batalha Completa
+        </Link>
+      </div>
 
       {/* Toggle Comentários */}
       <button className="btn-toggle-comentarios" onClick={toggleComentarios} type="button">

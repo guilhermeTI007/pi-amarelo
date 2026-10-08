@@ -641,7 +641,6 @@
 }
 .bdet-btn-voltar:hover { filter: brightness(1.1); }
 
-/* Responsivo */
 @media (max-width: 620px) {
   .bdet-arena {
     flex-direction: column;
@@ -668,5 +667,120 @@
   .bdet-barra-horiz-wrap {
     flex-direction: column;
     align-items: stretch;
+  }
+}
+
+/* ── Comentários em dois lados ──────────────────────────────────── */
+.bdet-comentarios-dois-lados {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.bdet-comentarios-lado {
+  flex: 1;
+  min-width: 0;
+}
+
+.bdet-comentarios-lado-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.06);
+}
+
+.bdet-comentarios-lado-nome {
+  font-size: 13px;
+  font-weight: 900;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
+}
+
+.bdet-comentarios-lado-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.bdet-comentarios-lado-badge--p1 {
+  background: rgba(248, 203, 71, 0.15);
+  color: var(--accent-yellow, #f8cb47);
+  border: 1px solid rgba(248, 203, 71, 0.3);
+}
+
+.bdet-comentarios-lado-badge--p2 {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+/* Borda lateral colorida por personagem */
+.bdet-comentarios-lado--p1 .bdet-comentario-corpo {
+  border-left: 2px solid rgba(248, 203, 71, 0.4);
+}
+
+.bdet-comentarios-lado--p2 .bdet-comentario-corpo {
+  border-left: 2px solid rgba(231, 76, 60, 0.4);
+}
+
+/* Divisor central */
+.bdet-comentarios-divisor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  width: 28px;
+  padding-top: 32px;
+}
+
+.bdet-comentarios-divisor-linha {
+  flex: 1;
+  width: 1px;
+  min-height: 40px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.bdet-comentarios-divisor-vs {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--accent-yellow, #f8cb47);
+  font-style: italic;
+  writing-mode: vertical-rl;
+  letter-spacing: 1px;
+}
+
+.bdet-lado-vazio {
+  text-align: center;
+  color: #4a5568;
+  font-size: 12px;
+  padding: 16px 8px;
+  font-style: italic;
+}
+
+/* Responsivo: em telas menores, empilha os dois lados */
+@media (max-width: 580px) {
+  .bdet-comentarios-dois-lados {
+    flex-direction: column;
+  }
+  .bdet-comentarios-divisor {
+    flex-direction: row;
+    width: 100%;
+    padding-top: 0;
+  }
+  .bdet-comentarios-divisor-linha {
+    flex: 1;
+    height: 1px;
+    width: auto;
+    min-height: unset;
+  }
+  .bdet-comentarios-divisor-vs {
+    writing-mode: horizontal-tb;
   }
 }

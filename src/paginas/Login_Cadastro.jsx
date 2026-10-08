@@ -121,16 +121,26 @@ function Login_Cadastro() {
                 fotoUrl = `https://rqjleobhyxxqfgwzruxa.supabase.co/storage/v1/object/public/personagens/${caminhoStorage}`;
             }
 
-            const { error, data } = await supabase.from("usuarios").insert([{
-                nome, email, senha, foto: fotoUrl, plano: planoSelecionado, data_nascimento: nascimento || "2000-01-01"
-            }]).select();
+            const { data, error } = await supabase.rpc('cadastrar_usuario', {
+                p_nome: nome,
+                p_email: email,
+                p_senha: senha,
+                p_foto: fotoUrl,
+                p_plano: planoSelecionado,
+                p_data_nascimento: nascimento || "2000-01-01",
+            });
 
-            if (!error && data && data.length > 0) {
-                localStorage.setItem("usuario_logado", JSON.stringify(Array.isArray(data) ? data[0] : data));
+            if (!error) {
+                let usuarioFinal = Array.isArray(data) ? data[0] : data;
+                if (!usuarioFinal || !usuarioFinal.id) {
+                    const { data: userBuscado } = await supabase.from("usuarios").select("*").eq("email", email).maybeSingle();
+                    if (userBuscado) usuarioFinal = userBuscado;
+                }
+                localStorage.setItem("usuario_logado", JSON.stringify(usuarioFinal || { nome, email, foto: fotoUrl, plano: planoSelecionado }));
                 showToast("Conta criada com sucesso! Bem-vindo(a)!", "sucesso");
                 setTimeout(() => { window.location.href = "/"; }, 1200);
             } else {
-                showToast("Erro ao criar conta. Tente novamente.", "erro");
+                showToast("Erro ao criar conta: " + (error.message || "Tente novamente."), "erro");
                 console.error(error);
             }
         } finally { setLoading(false); }
