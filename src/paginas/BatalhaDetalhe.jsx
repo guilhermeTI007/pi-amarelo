@@ -44,6 +44,7 @@ export default function BatalhaDetalhe() {
   const [comentarios, setComentarios] = useState([]);
   const [loadingComentarios, setLoadingComentarios] = useState(false);
   const [novoTexto, setNovoTexto] = useState('');
+  const [ladoComentario, setLadoComentario] = useState('p1');
   const [enviando, setEnviando] = useState(false);
   const [erroComentario, setErroComentario] = useState('');
   const [imagemModal, setImagemModal] = useState(null);
@@ -86,7 +87,7 @@ export default function BatalhaDetalhe() {
           const u = Array.isArray(parsed) ? parsed[0] : parsed;
           const votoSalvo = localStorage.getItem(`voto_post_${data.id}_user_${u.id}`);
           if (votoSalvo) setMeuVoto(votoSalvo);
-        } catch {}
+        } catch { }
       }
 
       carregarComentarios(data.id);
@@ -102,7 +103,7 @@ export default function BatalhaDetalhe() {
     try {
       const { data } = await supabase
         .from('comentarios')
-        .select('id, texto, data_comentario, id_usuarios, usuarios(nome, foto, plano)')
+        .select('*, usuarios(nome, foto, plano)')
         .eq('id_postagem', postId)
         .order('data_comentario', { ascending: true });
       const sorted = (data || []).sort((a, b) => (b.usuarios?.plano ?? 0) - (a.usuarios?.plano ?? 0));
@@ -140,9 +141,8 @@ export default function BatalhaDetalhe() {
     setErroComentario('');
     setEnviando(true);
     try {
-      const payloadBase = { texto, id_postagem: postagem.id };
+      const payloadBase = { texto, id_postagem: postagem.id, lado: ladoComentario };
       let payload = { ...payloadBase, id_usuarios: usuarioLogado.id };
-      console.log("vai inserir comentario em detalhe:", payload);
 
       let { data, error } = await supabase
         .from('comentarios')
@@ -150,17 +150,20 @@ export default function BatalhaDetalhe() {
         .select('*')
         .single();
 
-      if (error && error.message && (error.message.includes('id_usuarios') || error.code === 'PGRST204')) {
-        console.warn("Tentando com coluna alternativa 'id_usuario' para comentarios...");
-        payload = { ...payloadBase, id_usuario: usuarioLogado.id };
-        console.log("vai inserir comentario em detalhe (tentativa 2):", payload);
-        const res2 = await supabase
-          .from('comentarios')
-          .insert([payload])
-          .select('*')
-          .single();
+      if (error && (error.message?.includes('lado') || error.code === 'PGRST204')) {
+        // se a coluna lado não existir no DB, tenta enviar com fallback no texto
+        const textoComTag = `[${ladoComentario.toUpperCase()}] ${texto}`;
+        payload = { texto: textoComTag, id_postagem: postagem.id, id_usuarios: usuarioLogado.id };
+        const res2 = await supabase.from('comentarios').insert([payload]).select('*').single();
         data = res2.data;
         error = res2.error;
+      }
+
+      if (error && error.message && (error.message.includes('id_usuarios') || error.code === 'PGRST204')) {
+        payload = { texto, id_postagem: postagem.id, id_usuario: usuarioLogado.id };
+        const res3 = await supabase.from('comentarios').insert([payload]).select('*').single();
+        data = res3.data;
+        error = res3.error;
       }
 
       if (error) {
@@ -170,6 +173,7 @@ export default function BatalhaDetalhe() {
 
       const comentarioMontado = {
         ...data,
+        lado: data?.lado || ladoComentario,
         usuarios: {
           nome: usuarioLogado.nome,
           foto: usuarioLogado.foto,
@@ -205,7 +209,6 @@ export default function BatalhaDetalhe() {
     );
   }
 
-
   const p1 = postagem.personagem1;
   const p2 = postagem.personagem2;
   const totalVotos = votos1 + votos2;
@@ -216,6 +219,20 @@ export default function BatalhaDetalhe() {
   const dataFormatada = postagem.data_postagem
     ? new Date(postagem.data_postagem).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
     : '';
+
+  const comentariosP1 = comentarios.filter((c, i) => {
+    if (c.lado) return c.lado === 'p1';
+    if (c.texto && c.texto.startsWith('[P1]')) return true;
+    if (c.texto && c.texto.startsWith('[P2]')) return false;
+    return i % 2 === 0;
+  });
+
+  const comentariosP2 = comentarios.filter((c, i) => {
+    if (c.lado) return c.lado === 'p2';
+    if (c.texto && c.texto.startsWith('[P2]')) return true;
+    if (c.texto && c.texto.startsWith('[P1]')) return false;
+    return i % 2 !== 0;
+  });
 
   return (
     <div className="bdet-page">
@@ -341,9 +358,31 @@ export default function BatalhaDetalhe() {
             </div>
           )}
           <div className="bdet-form-input-wrap">
+            <div className="bdet-selecionar-lado">
+              <span className="bdet-lado-label">Comentar em apoio a:</span>
+              <div className="bdet-lado-botoes">
+                <button
+                  type="button"
+                  className={`bdet-btn-lado bdet-btn-lado--p1 ${ladoComentario === 'p1' ? 'ativo' : ''}`}
+                  onClick={() => setLadoComentario('p1')}
+                >
+                  <span className="bdet-lado-dot p1-dot" />
+                  {p1?.nome || 'Personagem 1'}
+                </button>
+                <button
+                  type="button"
+                  className={`bdet-btn-lado bdet-btn-lado--p2 ${ladoComentario === 'p2' ? 'ativo' : ''}`}
+                  onClick={() => setLadoComentario('p2')}
+                >
+                  <span className="bdet-lado-dot p2-dot" />
+                  {p2?.nome || 'Personagem 2'}
+                </button>
+              </div>
+            </div>
+
             <textarea
               className="bdet-comentario-input"
-              placeholder={usuarioLogado ? 'Escreva seu argumento sobre quem venceria essa batalha...' : 'Faça login para entrar na discussão...'}
+              placeholder={usuarioLogado ? `Escreva seu comentário apoiando ${ladoComentario === 'p1' ? (p1?.nome || 'Personagem 1') : (p2?.nome || 'Personagem 2')}...` : 'Faça login para entrar na discussão...'}
               value={novoTexto}
               onChange={e => setNovoTexto(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarComentario(); } }}
@@ -375,37 +414,40 @@ export default function BatalhaDetalhe() {
               <div className="bdet-comentarios-lado-header">
                 <span className="bdet-comentarios-lado-nome">{p1?.nome || 'Personagem 1'}</span>
                 <span className="bdet-comentarios-lado-badge bdet-comentarios-lado-badge--p1">
-                  {comentarios.filter(c => c.lado === 'p1').length} comentário(s)
+                  {comentariosP1.length} comentário(s)
                 </span>
               </div>
               <div className="bdet-lista-comentarios">
-                {comentarios.filter((_, i) => i % 2 === 0).length === 0 ? (
-                  <p className="bdet-lado-vazio">Nenhum comentário ainda</p>
+                {comentariosP1.length === 0 ? (
+                  <p className="bdet-lado-vazio">Nenhum comentário para este personagem ainda</p>
                 ) : (
-                  comentarios.filter((_, i) => i % 2 === 0).map(c => (
-                    <div key={c.id} className="bdet-comentario-item">
-                      <div className="bdet-comentario-avatar">
-                        {c.usuarios?.foto ? (
-                          /\.(mp4|webm|ogg|mov)$/i.test(c.usuarios.foto) ? (
-                            <video src={c.usuarios.foto} autoPlay loop muted playsInline style={{ pointerEvents: 'none', width: '100%', height: '100%', objectFit: 'cover' }} />
+                  comentariosP1.map(c => {
+                    const textoLimpo = c.texto ? c.texto.replace(/^\[P1\]\s*/i, '').replace(/^\[P2\]\s*/i, '') : '';
+                    return (
+                      <div key={c.id} className="bdet-comentario-item">
+                        <div className="bdet-comentario-avatar">
+                          {c.usuarios?.foto ? (
+                            /\.(mp4|webm|ogg|mov)$/i.test(c.usuarios.foto) ? (
+                              <video src={c.usuarios.foto} autoPlay loop muted playsInline style={{ pointerEvents: 'none', width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <img src={c.usuarios.foto} alt={c.usuarios.nome} />
+                            )
                           ) : (
-                            <img src={c.usuarios.foto} alt={c.usuarios.nome} />
-                          )
-                        ) : (
-                          <span>{c.usuarios?.nome?.charAt(0)?.toUpperCase() || '?'}</span>
-                        )}
-                      </div>
-                      <div className="bdet-comentario-corpo">
-                        <div className="bdet-comentario-meta">
-                          <span className="bdet-comentario-autor">{c.usuarios?.nome || 'Guerreiro'}</span>
-                          {c.usuarios?.plano === 2 && <span className="bdet-badge-vip">&#128081; VIP</span>}
-                          {c.usuarios?.plano === 1 && <span className="bdet-badge-pro">&#11088; Pro</span>}
-                          <span className="bdet-comentario-data">{c.data_comentario ? new Date(c.data_comentario).toLocaleDateString('pt-BR') : ''}</span>
+                            <span>{c.usuarios?.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                          )}
                         </div>
-                        <p className="bdet-comentario-texto">{c.texto}</p>
+                        <div className="bdet-comentario-corpo">
+                          <div className="bdet-comentario-meta">
+                            <span className="bdet-comentario-autor">{c.usuarios?.nome || 'Guerreiro'}</span>
+                            {c.usuarios?.plano === 2 && <span className="bdet-badge-vip">&#128081; VIP</span>}
+                            {c.usuarios?.plano === 1 && <span className="bdet-badge-pro">&#11088; Pro</span>}
+                            <span className="bdet-comentario-data">{c.data_comentario ? new Date(c.data_comentario).toLocaleDateString('pt-BR') : ''}</span>
+                          </div>
+                          <p className="bdet-comentario-texto">{textoLimpo}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -422,37 +464,40 @@ export default function BatalhaDetalhe() {
               <div className="bdet-comentarios-lado-header">
                 <span className="bdet-comentarios-lado-nome">{p2?.nome || 'Personagem 2'}</span>
                 <span className="bdet-comentarios-lado-badge bdet-comentarios-lado-badge--p2">
-                  {comentarios.filter((_, i) => i % 2 !== 0).length} comentário(s)
+                  {comentariosP2.length} comentário(s)
                 </span>
               </div>
               <div className="bdet-lista-comentarios">
-                {comentarios.filter((_, i) => i % 2 !== 0).length === 0 ? (
-                  <p className="bdet-lado-vazio">Nenhum comentário ainda</p>
+                {comentariosP2.length === 0 ? (
+                  <p className="bdet-lado-vazio">Nenhum comentário para este personagem ainda</p>
                 ) : (
-                  comentarios.filter((_, i) => i % 2 !== 0).map(c => (
-                    <div key={c.id} className="bdet-comentario-item">
-                      <div className="bdet-comentario-avatar">
-                        {c.usuarios?.foto ? (
-                          /\.(mp4|webm|ogg|mov)$/i.test(c.usuarios.foto) ? (
-                            <video src={c.usuarios.foto} autoPlay loop muted playsInline style={{ pointerEvents: 'none', width: '100%', height: '100%', objectFit: 'cover' }} />
+                  comentariosP2.map(c => {
+                    const textoLimpo = c.texto ? c.texto.replace(/^\[P1\]\s*/i, '').replace(/^\[P2\]\s*/i, '') : '';
+                    return (
+                      <div key={c.id} className="bdet-comentario-item">
+                        <div className="bdet-comentario-avatar">
+                          {c.usuarios?.foto ? (
+                            /\.(mp4|webm|ogg|mov)$/i.test(c.usuarios.foto) ? (
+                              <video src={c.usuarios.foto} autoPlay loop muted playsInline style={{ pointerEvents: 'none', width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <img src={c.usuarios.foto} alt={c.usuarios.nome} />
+                            )
                           ) : (
-                            <img src={c.usuarios.foto} alt={c.usuarios.nome} />
-                          )
-                        ) : (
-                          <span>{c.usuarios?.nome?.charAt(0)?.toUpperCase() || '?'}</span>
-                        )}
-                      </div>
-                      <div className="bdet-comentario-corpo">
-                        <div className="bdet-comentario-meta">
-                          <span className="bdet-comentario-autor">{c.usuarios?.nome || 'Guerreiro'}</span>
-                          {c.usuarios?.plano === 2 && <span className="bdet-badge-vip">&#128081; VIP</span>}
-                          {c.usuarios?.plano === 1 && <span className="bdet-badge-pro">&#11088; Pro</span>}
-                          <span className="bdet-comentario-data">{c.data_comentario ? new Date(c.data_comentario).toLocaleDateString('pt-BR') : ''}</span>
+                            <span>{c.usuarios?.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                          )}
                         </div>
-                        <p className="bdet-comentario-texto">{c.texto}</p>
+                        <div className="bdet-comentario-corpo">
+                          <div className="bdet-comentario-meta">
+                            <span className="bdet-comentario-autor">{c.usuarios?.nome || 'Guerreiro'}</span>
+                            {c.usuarios?.plano === 2 && <span className="bdet-badge-vip">&#128081; VIP</span>}
+                            {c.usuarios?.plano === 1 && <span className="bdet-badge-pro">&#11088; Pro</span>}
+                            <span className="bdet-comentario-data">{c.data_comentario ? new Date(c.data_comentario).toLocaleDateString('pt-BR') : ''}</span>
+                          </div>
+                          <p className="bdet-comentario-texto">{textoLimpo}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>

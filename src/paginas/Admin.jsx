@@ -69,7 +69,7 @@ function StatCard({ label, value, color }) {
 }
 
 // ── Seção: Usuários ──────────────────────────────────────────────────
-function SecaoUsuarios({ dados, onRecarregar }) {
+function SecaoUsuarios({ dados, onRecarregar, admin }) {
   const [busca, setBusca] = useState('');
   const [editando, setEditando] = useState(null);
   const [novoPlano, setNovoPlano] = useState(null);
@@ -83,16 +83,20 @@ function SecaoUsuarios({ dados, onRecarregar }) {
 
   async function salvarPlano(userId) {
     setSalvando(true);
-    await supabase.from('usuarios').update({ plano: novoPlano }).eq('id', userId);
+    const { error } = await supabase.rpc('admin_atualizar_plano', {
+      p_admin_id: admin.id, p_admin_senha: admin.senha, p_user_id: userId, p_plano: novoPlano,
+    });
+    if (error) alert('Erro ao salvar plano: ' + error.message);
     setSalvando(false);
     setEditando(null);
     onRecarregar();
   }
 
   async function deletarUsuario(userId) {
-    await supabase.from('comentarios').delete().eq('id_usuarios', userId);
-    await supabase.from('postagem').delete().eq('id_usuario', userId);
-    await supabase.from('usuarios').delete().eq('id', userId);
+    const { error } = await supabase.rpc('admin_deletar_usuario', {
+      p_admin_id: admin.id, p_admin_senha: admin.senha, p_user_id: userId,
+    });
+    if (error) alert('Erro ao deletar usuário: ' + error.message);
     setConfirmDelete(null);
     onRecarregar();
   }
@@ -666,8 +670,8 @@ export default function Admin() {
   const carregarTodos = useCallback(async () => {
     setLoading(true);
     try {
-      const [{ data: u }, { data: c }, { data: b }, { count: pCount, data: pRecentes }] = await Promise.all([
-        supabase.from('usuarios').select('*').order('id', { ascending: true }),
+      const [{ data: u, error: uErr }, { data: c }, { data: b }, { count: pCount, data: pRecentes }] = await Promise.all([
+        supabase.rpc('admin_listar_usuarios', { p_admin_id: admin.id, p_admin_senha: admin.senha }),
         supabase.from('comentarios')
           .select('id, texto, data_comentario, id_usuarios, id_postagem, usuarios(nome, plano), postagem:id_postagem(id, personagem1:id_personagem1(nome), personagem2:id_personagem2(nome))')
           .order('data_comentario', { ascending: false }),
@@ -676,13 +680,14 @@ export default function Admin() {
           .order('data_postagem', { ascending: false }),
         supabase.from('personagens').select('*', { count: 'exact' }).order('created_at', { ascending: false }).limit(5),
       ]);
+      if (uErr) console.error('Erro ao listar usuários:', uErr);
       setUsuarios(u || []);
       setComentarios(c || []);
       setBatalhas(b || []);
       setTotalPersonagensCount(pCount || 0);
       setPersonagensRecentes(pRecentes || []);
     } finally { setLoading(false); }
-  }, []);
+  }, [admin]);
 
   useEffect(() => { if (admin) carregarTodos(); }, [admin, carregarTodos]);
 
@@ -888,7 +893,7 @@ export default function Admin() {
               </div>
             )}
 
-            {aba === 'usuarios' && <SecaoUsuarios dados={usuarios} onRecarregar={carregarTodos} />}
+            {aba === 'usuarios' && <SecaoUsuarios dados={usuarios} onRecarregar={carregarTodos} admin={admin} />}
             {aba === 'personagens' && <SecaoPersonagens onRecarregarTotal={c => setTotalPersonagensCount(c)} />}
             {aba === 'comentarios' && <SecaoComentarios dados={comentarios} onRecarregar={carregarTodos} />}
             {aba === 'batalhas' && <SecaoBatalhas dados={batalhas} onRecarregar={carregarTodos} />}

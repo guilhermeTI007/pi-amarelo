@@ -70,6 +70,7 @@ function Login_Cadastro() {
         }
     }, [navigate]);
 
+    const [loginInput, setLoginInput] = useState("");
     const [nome, alteraNome] = useState("");
     const [nascimento, alteraData] = useState("");
     const [email, alteraEmail] = useState("");
@@ -91,6 +92,7 @@ function Login_Cadastro() {
 
     function alternarModo(paraCadastro) {
         alteraExibeCadastro(paraCadastro);
+        setLoginInput("");
         alteraNome("");
         alteraEmail("");
         alteraSenha("");
@@ -101,20 +103,24 @@ function Login_Cadastro() {
     }
 
     async function inserirUser() {
-        if (!nome || !email || !senha) { showToast("Preencha todos os campos obrigatórios", "erro"); return; }
-        if (senha.length < 8) { showToast("A senha precisa ter no mínimo 8 caracteres", "erro"); return; }
-        if (senha !== verificaSenha) { showToast("As senhas não coincidem", "erro"); return; }
+        const nomeLimpo = nome.trim();
+        const emailLimpo = email.trim();
+        const senhaLimpa = senha.trim();
+
+        if (!nomeLimpo || !emailLimpo || !senhaLimpa) { showToast("Preencha todos os campos obrigatórios", "erro"); return; }
+        if (senhaLimpa.length < 8) { showToast("A senha precisa ter no mínimo 8 caracteres", "erro"); return; }
+        if (senhaLimpa !== verificaSenha.trim()) { showToast("As senhas não coincidem", "erro"); return; }
 
         setLoading(true);
         try {
-            const { data: existente } = await supabase.from("usuarios").select("nome").eq("nome", nome);
-            if (existente && existente.length > 0) { showToast("Este nome de usuário já existe. Escolha outro.", "erro"); return; }
+            const { data: existente } = await supabase.from("usuarios").select("nome, email").or(`nome.ilike.${nomeLimpo},email.ilike.${emailLimpo}`);
+            if (existente && existente.length > 0) { showToast("Este nome de usuário ou e-mail já existe.", "erro"); return; }
 
-            let fotoUrl = "https://placehold.co/120x120/FFF/000?text=" + encodeURIComponent(nome.charAt(0).toUpperCase());
+            let fotoUrl = "https://placehold.co/120x120/FFF/000?text=" + encodeURIComponent(nomeLimpo.charAt(0).toUpperCase());
 
             if (arquivo) {
                 const ext = arquivo.name.split(".").pop() || "png";
-                const nomeArquivoLimpo = nome.trim().toLowerCase().replace(/[^a-z0-9]/g, "_");
+                const nomeArquivoLimpo = nomeLimpo.toLowerCase().replace(/[^a-z0-9]/g, "_");
                 const caminhoStorage = `outros/${Date.now()}_${nomeArquivoLimpo}.${ext}`;
                 const { error: uploadErr } = await supabase.storage.from("personagens").upload(caminhoStorage, arquivo, { cacheControl: "3600", upsert: true });
                 if (uploadErr) { showToast("Erro ao enviar a foto: " + uploadErr.message, "erro"); return; }
@@ -122,9 +128,9 @@ function Login_Cadastro() {
             }
 
             const { data, error } = await supabase.rpc('cadastrar_usuario', {
-                p_nome: nome,
-                p_email: email,
-                p_senha: senha,
+                p_nome: nomeLimpo,
+                p_email: emailLimpo,
+                p_senha: senhaLimpa,
                 p_foto: fotoUrl,
                 p_plano: planoSelecionado,
                 p_data_nascimento: nascimento || "2000-01-01",
@@ -133,10 +139,10 @@ function Login_Cadastro() {
             if (!error) {
                 let usuarioFinal = Array.isArray(data) ? data[0] : data;
                 if (!usuarioFinal || !usuarioFinal.id) {
-                    const { data: userBuscado } = await supabase.from("usuarios").select("*").eq("email", email).maybeSingle();
+                    const { data: userBuscado } = await supabase.from("usuarios").select("*").ilike("email", emailLimpo).maybeSingle();
                     if (userBuscado) usuarioFinal = userBuscado;
                 }
-                localStorage.setItem("usuario_logado", JSON.stringify(usuarioFinal || { nome, email, foto: fotoUrl, plano: planoSelecionado }));
+                localStorage.setItem("usuario_logado", JSON.stringify(usuarioFinal || { nome: nomeLimpo, email: emailLimpo, foto: fotoUrl, plano: planoSelecionado }));
                 showToast("Conta criada com sucesso! Bem-vindo(a)!", "sucesso");
                 setTimeout(() => { window.location.href = "/"; }, 1200);
             } else {
@@ -147,27 +153,52 @@ function Login_Cadastro() {
     }
 
     async function fazerLogin() {
-        if (!nome && !email) { showToast("Informe seu nome de usuário ou e-mail", "erro"); return; }
-        if (!senha) { showToast("Informe sua senha", "erro"); return; }
+        const loginLimpo = loginInput.trim();
+        const senhaLimpa = senha.trim();
+
+        if (!loginLimpo) { showToast("Informe seu nome de usuário ou e-mail", "erro"); return; }
+        if (!senhaLimpa) { showToast("Informe sua senha", "erro"); return; }
 
         setLoading(true);
         try {
-            const coluna = email !== "" ? "email" : "nome";
-            const valor = email !== "" ? email : nome;
-            const { data } = await supabase.from("usuarios").select("*").eq(coluna, valor).eq("senha", senha);
+            const { data, error } = await supabase.rpc("login_usuario", {
+                p_login: loginLimpo,
+                p_senha: senhaLimpa,
+            });
+
+            if (error) {
+                showToast("Erro no servidor: " + (error.message || "Falha ao consultar banco"), "erro");
+                console.error("Erro no Supabase login:", error);
+                return;
+            }
 
             if (data && data.length > 0) {
-                const usuario = Array.isArray(data) ? data[0] : data;
+                const usuario = data[0];
                 localStorage.setItem("usuario_logado", JSON.stringify(usuario));
-                showToast("Bem-vindo(a) de volta!", "sucesso");
-                // Redireciona admin para o painel, usuário normal para home
+                showToast(`Bem-vindo(a) de volta, ${usuario.nome}!`, "sucesso");
+                // Redireciona admin para o painel /admin, usuário normal para home /
                 const destino = usuario.is_admin ? "/admin" : "/";
                 setTimeout(() => { window.location.href = destino; }, 1000);
             } else {
-                showToast("Usuário ou senha incorretos. Tente novamente.", "erro");
+                showToast("Usuário/E-mail ou senha incorretos. Tente novamente.", "erro");
             }
+        } catch (err) {
+            showToast("Erro inesperado: " + err.message, "erro");
+            console.error(err);
         } finally { setLoading(false); }
     }
+
+    useEffect(() => {
+        // Limpa todos os campos ao carregar a página para evitar autopreenchimento guardado no navegador
+        setLoginInput("");
+        alteraNome("");
+        alteraData("");
+        alteraEmail("");
+        alteraSenha("");
+        ConfereSenha("");
+        setArquivo(null);
+        setPlanoSelecionado(0);
+    }, []);
 
     if (!checkedAuth) return null;
 
@@ -177,30 +208,30 @@ function Login_Cadastro() {
             <div className="lc-wrapper">
                 <div className="lc-card">
                     {exibeCadastro ? (
-                        <>
+                        <form autoComplete="off" onSubmit={e => { e.preventDefault(); inserirUser(); }}>
                             <div className="lc-card-header">
                                 <h1 className="lc-card-title">Cadastrar Usuário</h1>
                             </div>
                             <div className="lc-form-group">
                                 <div className="lc-row-2">
                                     <div className="lc-field">
-                                        <input className="lc-input" type="text" placeholder="Nome de usuário" value={nome} onChange={e => alteraNome(e.target.value)} />
+                                        <input className="lc-input" type="text" placeholder="Nome de usuário" autoComplete="off" value={nome} onChange={e => alteraNome(e.target.value)} />
                                     </div>
                                     <div className="lc-field">
-                                        <input className="lc-input" type="date" placeholder="Data de nascimento" value={nascimento} onChange={e => alteraData(e.target.value)} />
+                                        <input className="lc-input" type="date" placeholder="Data de nascimento" autoComplete="off" value={nascimento} onChange={e => alteraData(e.target.value)} />
                                     </div>
                                 </div>
                                 <div className="lc-field">
-                                    <input className="lc-input" type="email" placeholder="E-mail" value={email} onChange={e => alteraEmail(e.target.value)} />
+                                    <input className="lc-input" type="email" placeholder="E-mail" autoComplete="off" value={email} onChange={e => alteraEmail(e.target.value)} />
                                 </div>
                                 <div className="lc-field">
-                                    <input className="lc-input" type="password" placeholder="senha" value={senha} onChange={e => alteraSenha(e.target.value)} />
+                                    <input className="lc-input" type="password" placeholder="senha" autoComplete="new-password" value={senha} onChange={e => alteraSenha(e.target.value)} />
                                     <PasswordChecker senha={senha} />
                                 </div>
                                 <div className="lc-field">
                                     <input
                                         className={`lc-input ${verificaSenha && senha !== verificaSenha ? "lc-input--erro" : verificaSenha && senha === verificaSenha ? "lc-input--ok" : ""}`}
-                                        type="password" placeholder="confirmar senha" value={verificaSenha} onChange={e => ConfereSenha(e.target.value)}
+                                        type="password" placeholder="confirmar senha" autoComplete="new-password" value={verificaSenha} onChange={e => ConfereSenha(e.target.value)}
                                     />
                                     {verificaSenha && senha !== verificaSenha && <span className="lc-field-erro">As senhas não coincidem</span>}
                                     {verificaSenha && senha === verificaSenha && <span className="lc-field-ok">✓ Senhas coincidem</span>}
@@ -233,46 +264,41 @@ function Login_Cadastro() {
                                 </div>
                             </div>
                             <div className="lc-actions">
-                                <button className="lc-btn lc-btn--primary" onClick={inserirUser} disabled={loading}>
+                                <button className="lc-btn lc-btn--primary" type="submit" disabled={loading}>
                                     {loading ? <span className="lc-spinner" /> : "CONTINUAR"}
                                 </button>
                                 <button className="lc-btn lc-btn--ghost" onClick={() => alternarModo(false)} type="button">
                                     Já tenho uma conta?
                                 </button>
                             </div>
-                        </>
+                        </form>
                     ) : (
-                        <>
+                        <form autoComplete="off" onSubmit={e => { e.preventDefault(); fazerLogin(); }}>
                             <div className="lc-card-header">
                                 <h1 className="lc-card-title">Entrar na conta</h1>
                             </div>
                             <div className="lc-form-group">
                                 <div className="lc-field">
-                                    <input className="lc-input" type="text" placeholder="Nome de usuário ou E-mail"
-                                        value={email !== "" ? email : nome}
-                                        onChange={e => {
-                                            const val = e.target.value;
-                                            if (val.includes("@")) { alteraEmail(val); alteraNome(""); }
-                                            else { alteraNome(val); alteraEmail(""); }
-                                        }}
+                                    <input className="lc-input" type="text" placeholder="Nome de usuário ou E-mail" autoComplete="off"
+                                        value={loginInput}
+                                        onChange={e => setLoginInput(e.target.value)}
                                     />
                                 </div>
                                 <div className="lc-field">
-                                    <input className="lc-input" type="password" placeholder="senha" value={senha}
+                                    <input className="lc-input" type="password" placeholder="senha" autoComplete="current-password" value={senha}
                                         onChange={e => alteraSenha(e.target.value)}
-                                        onKeyDown={e => e.key === "Enter" && fazerLogin()}
                                     />
                                 </div>
                             </div>
                             <div className="lc-actions">
-                                <button className="lc-btn lc-btn--primary" onClick={fazerLogin} disabled={loading}>
+                                <button className="lc-btn lc-btn--primary" type="submit" disabled={loading}>
                                     {loading ? <span className="lc-spinner" /> : "CONTINUAR"}
                                 </button>
                                 <button className="lc-btn lc-btn--ghost" onClick={() => alternarModo(true)} type="button">
                                     Criar novo usuário
                                 </button>
                             </div>
-                        </>
+                        </form>
                     )}
                 </div>
             </div>
